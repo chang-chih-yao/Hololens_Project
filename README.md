@@ -29,5 +29,5 @@ Version：
 - Visual Studio 2017
 - Unity 2018.3.0f
 - [HoloToolkit-Unity](https://github.com/Microsoft/MixedRealityToolkit-Unity/releases) 2017.4.3.0
-- [OpenCV for Unity] 2.3.3
+- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR&utm_source=aff) 2.3.3
 - [HoloLensCameraStream](https://github.com/VulcanTechnologies/HoloLensCameraStream)
