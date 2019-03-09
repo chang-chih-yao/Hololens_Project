@@ -1,7 +1,7 @@
 # Server
 
-- TSN_Training：我們必須先把Action Recognintion Network訓練好，並產生.pth的檔案給pytorch model用
-- Run_Hololens：裡面已經包含OpenPose跟TSN model，可以直接連上Hololens
+- TSN_Training：我們必須先把 Action Recognintion Network 訓練好，並產生 .pth 的檔案給 pytorch model 用
+- Run_Hololens：裡面已經包含 OpenPose跟TSN model，可以直接連上 Hololens
 
 ***
 
