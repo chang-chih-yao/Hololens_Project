@@ -13,6 +13,9 @@
 例如螺旋丸：  
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/4.gif)
 
+在Hololens眼鏡裡面就會看到這樣：  
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/3.JPG)
+
 ***
 
 ## Installation for Hololens Toolkit and Unity
