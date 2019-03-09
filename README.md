@@ -11,7 +11,7 @@
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/1.png)
 
 例如螺旋丸：  
-![image]()
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/4.gif)
 
 ***
 
