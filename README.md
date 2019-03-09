@@ -34,7 +34,7 @@ Version：
 - [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR&utm_source=aff) 2.3.3
 - [HoloLensCameraStream](https://github.com/VulcanTechnologies/HoloLensCameraStream)
 
-在Client裡面的Assets資料夾內，若上述全部都裝完應該會長這樣：
+在Client裡面的Assets資料夾內，若上述全部都裝完應該會長這樣：  
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/2.JPG)
 
 ***
