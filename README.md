@@ -44,7 +44,7 @@
 
 **總共會有大約 10000 segments video。**  
 
-蒐集資料的地點，以及camera擺放位置：
+### 蒐集資料的地點，以及camera擺放位置：
 
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data1.JPG)
 
@@ -61,6 +61,10 @@ Dataset look like：(1 people, 1action, 1 direction, 4 camera)
 * Total：7,500 segments, include 150,000 images (we don't use all dataset)
   * Traing：5,000 segments
   * Testing：2,500 segments
+
+### Result：
+
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/4cam_2019_0505_6_actions_6_class.JPG)
 
 ***
 
