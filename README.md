@@ -50,7 +50,7 @@
 
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Camera%20Position.JPG)
 
-Dataset：
+Dataset look like：(1 people, 1action, 1 direction, 4 camera)
 
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data2.JPG)
 
