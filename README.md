@@ -37,12 +37,12 @@
 
 ## Our Dataset
 
-我們總共請了15個人來幫忙錄data。  
-每個人做6個action(有一個是no action)。  
-每個action要朝3種不同的方向做。  
-每個action重複10次。  
+* 我們總共請了15個人來幫忙錄data。  
+* 每個人做6個action(有一個是no action)。  
+* 每個action要朝3種不同的方向做。  
+* 每個action重複10次。  
 
-總共會有大約 10000 segments video。  
+**總共會有大約 10000 segments video。**  
 
 蒐集資料的地點，以及camera擺放位置：
 
@@ -53,6 +53,14 @@
 Dataset look like：(1 people, 1action, 1 direction, 4 camera)
 
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data2.JPG)
+
+***
+
+## Training on our dataset
+
+* Total：7,500 segments, include 150,000 images (we don't use all dataset)
+  * Traing：5,000 segments
+  * Testing：2,500 segments
 
 ***
 
