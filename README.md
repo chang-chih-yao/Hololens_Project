@@ -17,6 +17,8 @@
 
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Flow_Chart2.JPG)
 
+***
+
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Flow_Chart.png)
 
 ***
@@ -35,7 +37,22 @@
 
 ## Our Dataset
 
+我們總共請了15個人來幫忙錄data。  
+每個人做6個action(有一個是no action)。  
+每個action要朝3種不同的方向做。  
+每個action重複10次。  
 
+總共會有大約 10000 segments video。  
+
+蒐集資料的地點，以及camera擺放位置：
+
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data1.JPG)
+
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Camera%20Position.JPG)
+
+Dataset：
+
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data2.JPG)
 
 ***
 
