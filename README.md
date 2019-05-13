@@ -39,10 +39,10 @@
 
 ## Our Dataset
 
-* 我們總共請了15個人來幫忙錄data。  
-* 每個人做6個action(有一個是no action)。  
-* 每個action要朝3種不同的方向做。  
-* 每個action重複10次。  
+* 我們總共請了 15 個人來幫忙錄data。  
+* 每個人做 6 個action(有一個是no action)。  
+* 每個action要朝 3 種不同的方向做。  
+* 每個action重複 10 次。  
 
 **總共會有大約 10000 segments video。**  
 
