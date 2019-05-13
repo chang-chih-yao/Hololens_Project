@@ -68,7 +68,7 @@
 
 ### Result：
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/4cam_2019_0505_6_actions_6_class.JPG)
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Server1/tsn_pytorch/pth/4cam_2019_0505_6_actions_6_class.JPG)
 
 ***
 
