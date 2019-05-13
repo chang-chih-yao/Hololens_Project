@@ -4,7 +4,7 @@
 - 開發平台：Win 10, GTX 1060, i7-7700k
 - 開發裝置：Microsoft Hololens 1
 - 開發工具：Python 3.6, Unity 2018.3.0f
-- 技術：Tensorflow 1.9.0 (pose-estimation, human-detection), PyTorch 0.4.1 (action-recognition)
+- 技術：Tensorflow 1.9.0 (pose-estimation, human-detection, human-tracking), PyTorch 0.4.1 (action-recognition)
 
 ***
 
@@ -39,10 +39,10 @@
 
 ## Our Dataset
 
-* 我們總共請了15個人來幫忙錄data。  
-* 每個人做6個action(有一個是no action)。  
-* 每個action要朝3種不同的方向做。  
-* 每個action重複10次。  
+* 我們總共請了 15 個人來幫忙錄data。  
+* 每個人做 6 個action(有一個是no action)。  
+* 每個action要朝 3 種不同的方向做。  
+* 每個action重複 10 次。  
 
 **總共會有大約 10000 segments video。**  
 
