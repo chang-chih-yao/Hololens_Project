@@ -1,0 +1,52 @@
+資料夾1~6：
+裡面都是經過人工篩選的動作片段
+
+1：No Action
+2：螺旋丸
+3：左手甩鞭
+4：歸派氣功
+5：大絕
+6：防禦
+
+但是這些片段還沒經過openpose crop
+
+-----------------------------------------------------------------
+
+使用方式：
+經過人工篩選好片段，並且分類在1~6資料夾內後，執行此資料夾 rename.py
+把1~6資料夾內的片段全部變成 img_00001.jpg ~ img_xxxxx.jpg
+
+接著去 openpose 的 src 裡面執行 crop.py
+他會把1~6資料夾內所有未經 crop 過的片段 crop 一次 (需要進入code調整參數：file_arr、old_file_num)
+crop完之後，所有的影像都會變成正方形，並且把crop完的影像放到此資料夾的crop資料夾內(也是按照資料夾1~6排放好)。
+但要留意，如果有出現error次數代表有幾張frame是沒有被openpose偵測到的
+在小黑窗裡面，會把error的image_name印出來，需要手動去crop成正方形
+
+接著到此資料夾內執行 file.py
+會根據 crop 內的分類資料夾按照順序2:1分為 training data 跟 testing data
+EX:
+1_0001   train
+1_0002   train
+1_0003   test
+1_0004   train
+1_0005   train
+1_0006   test
+1_0007   train
+1_0008   train
+1_0009   test
+.
+.
+.
+
+執行完之後，會產生出兩個檔案 my_train.txt 跟 my_test.txt
+裡面的資料：每一行有三段資料，第一段是片段資料夾位置，第二段是該資料夾內有幾個frame，第三段是這片段是哪一個label
+
+準備好這些東西之後就可以開始 training 跟 testing 了
+
+到 D:\code\Action Recognition\tsn-pytorch 內
+
+Training：
+python main_two_class.py ucf101 RGB D:\Dataset\Action\my_dataset\my_train.txt D:\Dataset\Action\my_dataset\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 60 -b 16 -j 0 --dropout 0.8 --gpus 0
+
+Testing：
+python run_ex_two_class.py ucf101 RGB D:\Dataset\Action\my_dataset\my_test.txt _rgb_checkpoint.pth.tar --arch resnet34
