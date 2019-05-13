@@ -1,0 +1,130 @@
+資料夾1~6：
+裡面都是經過人工篩選的動作片段
+
+1：No Action
+2：螺旋丸
+3：左手甩鞭
+4：歸派氣功
+5：大絕
+6：防禦
+
+但是這些片段還沒經過openpose crop
+
+-----------------------------------------------------------------
+
+使用方式：
+經過人工篩選好片段，並且分類在1~6資料夾內後，執行此資料夾 rename.py
+把1~6資料夾內的片段全部變成 img_00001.jpg ~ img_xxxxx.jpg
+
+接著去 openpose 的 src 裡面執行 crop.py
+他會把1~6資料夾內所有未經 crop 過的片段 crop 一次 (需要進入code調整參數：file_arr、old_file_num)
+crop完之後，所有的影像都會變成正方形，並且把crop完的影像放到此資料夾的crop資料夾內(也是按照資料夾1~6排放好)。
+但要留意，如果有出現error次數代表有幾張frame是沒有被openpose偵測到的
+在小黑窗裡面，會把error的image_name印出來，需要手動去crop成正方形
+
+接著到此資料夾內執行 file.py
+會根據 crop 內的分類資料夾按照順序2:1分為 training data 跟 testing data
+EX:
+0001   train
+0002   train
+0003   test
+0004   train
+0005   train
+0006   test
+0007   train
+0008   train
+0009   test
+.
+.
+.
+
+執行完之後，會產生出兩個檔案 my_train.txt 跟 my_test.txt
+裡面的資料：每一行有三段資料，第一段是片段資料夾位置，第二段是該資料夾內有幾個frame，第三段是這片段是哪一個label
+
+準備好這些東西之後就可以開始 training 跟 testing 了
+
+到 D:\code\Action Recognition\tsn-pytorch 內
+
+Training：
+python main_two_class.py 21 RGB D:\Dataset\Action\my_dataset_4_cam\my_train.txt D:\Dataset\Action\my_dataset_4_cam\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 60 -b 16 -j 0 --dropout 0.8 --gpus 0
+
+Testing：
+python run_ex_two_class.py 21 RGB D:\Dataset\Action\my_dataset_4_cam\my_test.txt _rgb_checkpoint.pth.tar --arch resnet34
+
+env :
+# packages in environment at C:\ProgramData\Anaconda3\envs\pytorch:
+#
+# Name                    Version                   Build  Channel
+absl-py                   0.7.0                     <pip>
+astor                     0.7.1                     <pip>
+astroid                   2.1.0                     <pip>
+blas                      1.0                         mkl
+bleach                    1.5.0                     <pip>
+ca-certificates           2018.11.29           ha4d7672_0    conda-forge
+certifi                   2018.11.29            py36_1000    conda-forge
+cffi                      1.11.5           py36h74b6da3_1
+colorama                  0.4.1                     <pip>
+cycler                    0.10.0           py36h009560c_0
+freetype                  2.9.1                ha9979f8_1
+gast                      0.2.2                     <pip>
+grpcio                    1.18.0                    <pip>
+html5lib                  0.9999999                 <pip>
+icc_rt                    2017.0.4             h97af966_0
+icu                       58.2                 ha66f8fd_1
+intel-openmp              2019.1                      144
+isort                     4.3.4                     <pip>
+jpeg                      9c                hfa6e2cd_1001    conda-forge
+kiwisolver                1.0.1            py36h6538335_0
+lazy-object-proxy         1.3.1                     <pip>
+libpng                    1.6.35               h2a8f88b_0
+libtiff                   4.0.10            h36446d0_1001    conda-forge
+libwebp                   1.0.1             hfa6e2cd_1000    conda-forge
+Markdown                  3.0.1                     <pip>
+matplotlib                3.0.2           py36h8a2030e_1001    conda-forge
+matplotlib-base           3.0.2           py36h3e3dc42_1001    conda-forge
+mccabe                    0.6.1                     <pip>
+mkl                       2018.0.3                      1
+mkl_fft                   1.0.6            py36hdbbee80_0
+mkl_random                1.0.1            py36h77b88f5_1
+numpy                     1.15.4                    <pip>
+numpy                     1.15.4           py36ha559c80_0
+numpy-base                1.15.4           py36h8128ebf_0
+opencv                    3.4.4           py36hb76ac4c_1203    conda-forge
+openssl                   1.0.2p            hfa6e2cd_1001    conda-forge
+pandas                    0.23.4                    <pip>
+Pillow                    5.3.0                     <pip>
+pip                       18.1                     py36_0
+protobuf                  3.6.1                     <pip>
+psutil                    5.5.1                     <pip>
+pycparser                 2.19                     py36_0
+pylint                    2.2.2                     <pip>
+pyparsing                 2.3.0                    py36_0
+pyqt                      5.6.0                    py36_2
+python                    3.6.7                h33f27b4_1
+python-dateutil           2.7.5                    py36_0
+pytorch                   0.4.1           py36_cuda90_cudnn7he774522_1    pytorch
+pytz                      2018.7                   py36_0
+PyYAML                    3.13                      <pip>
+qt                        5.6.2                h2639256_8    conda-forge
+scikit-learn              0.20.1           py36hb854c30_0
+scipy                     1.1.0            py36h4f6bf74_1
+setuptools                40.6.2                   py36_0
+sip                       4.19.8           py36h6538335_0
+six                       1.11.0                    <pip>
+six                       1.12.0                   py36_0
+slidingwindow             0.0.13                    <pip>
+sqlite                    3.26.0               he774522_0
+tensorboard               1.8.0                     <pip>
+tensorflow-gpu            1.8.0                     <pip>
+termcolor                 1.1.0                     <pip>
+terminaltables            3.1.0                     <pip>
+torchvision               0.2.1                     <pip>
+tornado                   5.1.1            py36hfa6e2cd_0
+typed-ast                 1.1.0                     <pip>
+vc                        14.1                 h0510ff6_4
+vs2015_runtime            14.15.26706          h3a45250_0
+Werkzeug                  0.14.1                    <pip>
+wheel                     0.32.3                   py36_0
+wincertstore              0.2              py36h7fe50ca_0
+wrapt                     1.10.11                   <pip>
+zlib                      1.2.11               h62dcd97_3
