@@ -32,8 +32,9 @@ $ cd tf-pose-estimation
 $ python setup.py install
 ```
 
-if setup.py cause error, delete line 15.
+If setup.py cause error, delete line 15.  
 ```subprocess.check_output(["bash", "models/graph/cmu/download.sh"], cwd=cwd)```
+But make sure you have already downloaded "graph_opt.pb" in "models/graph/cmu/"
 
 ## Models & Performances
 
