@@ -3,6 +3,7 @@
 先去 [weight](https://github.com/chang-chih-yao/Hololens_Project/tree/master/Core/TensorFlow/weight) 資料夾裡面看README，把想要model載完，解壓縮之後再來看這篇。  
 
 * 照著 TensorFlow Object Detection API tutorial documentation.pdf 指示安裝
+* 由於這個資料夾已經是 TensorFlow ，所以只需要把models資料夾放在此處即可
 * ENV：
   * Win10
   * GTX 1060
