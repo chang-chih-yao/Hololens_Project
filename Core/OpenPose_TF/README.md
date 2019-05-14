@@ -37,8 +37,8 @@ You need dependencies below.
   - https://github.com/adamrehn/slidingwindow
   - I copied from the above git repo to modify few things.
 - pycocotools
-  - pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI
-  - need "pip install cython" first
+  - ```pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI```
+  - need ```pip install cython``` first
 
 ### Package Install
 
