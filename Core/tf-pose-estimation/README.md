@@ -6,19 +6,6 @@
 
 **You can even run this on your macbook with a descent FPS!**
 
-## Install
-
-### Dependencies
-
-You need dependencies below.
-
-- python 3.6
-- tensorflow 1.4.1+ (1.9.0)
-- opencv3, protobuf, python3-tk
-- slidingwindow
-  - https://github.com/adamrehn/slidingwindow
-  - I copied from the above git repo to modify few things.
-
 ## Models & Performances
 
 See [experiments.md](./etc/experiments.md)
@@ -38,6 +25,19 @@ CMU's model graphs are too large for git, so I uploaded them on an external clou
 $ cd models/graph/cmu
 $ bash download.sh
 ```
+
+## Install
+
+### Dependencies
+
+You need dependencies below.
+
+- python 3.6
+- tensorflow 1.4.1+ (1.9.0)
+- opencv3, protobuf, python3-tk
+- slidingwindow
+  - https://github.com/adamrehn/slidingwindow
+  - I copied from the above git repo to modify few things.
 
 ### Package Install
 
