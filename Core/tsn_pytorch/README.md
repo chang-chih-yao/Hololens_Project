@@ -18,7 +18,7 @@ For optical flow extraction and video list generation, you still need to use the
 - torchvision 0.2.1
 
 set PYTHONPATH：  
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Environment.JPG)
+![image](../../etcs/Environment.JPG)
 
 ## Model
 
