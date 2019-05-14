@@ -49,7 +49,7 @@
 
 #### 蒐集資料的地點，以及camera擺放位置：
 
-在lab裡面，隨便找一面牆壁拍攝
+在lab裡面，隨便找一面牆壁拍攝  
 
 #### Dataset look like：(1 people, 6 actions)
 
@@ -62,8 +62,6 @@
 * 每個action要朝 3 種不同的方向(direction)做。  
 * 每個action重複 10 次。  
 * 總共會有大約 9000 segments video**  
-
-***
 
 #### 蒐集資料的地點，以及camera擺放位置：
 
