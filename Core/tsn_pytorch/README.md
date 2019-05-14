@@ -24,7 +24,7 @@ set PYTHONPATH：
 
 [tsn_pytorch_resnet34](https://drive.google.com/drive/folders/11U1j7s2lO1tn2PxR40CGzIxBo9B9Xwpe?usp=sharing)
 
-**please put *.pth files in "Hololens_Project/Core/tsn_pytorch/pth"**
+**please put \*.pth files in "Hololens_Project/Core/tsn_pytorch/pth"**
 
 ## Training
 
