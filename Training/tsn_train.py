@@ -250,11 +250,11 @@ def validate(val_loader, model, criterion, iter, logger=None):
     return top1.avg
 
 
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename='checkpoint.pth'):
     filename = '_'.join((args.snapshot_pref, args.modality.lower(), filename))
     torch.save(state, filename)
     if is_best:
-        best_name = '_'.join((args.snapshot_pref, args.modality.lower(), 'model_best.pth.tar'))
+        best_name = '_'.join((args.snapshot_pref, args.modality.lower(), 'model_best.pth'))
         shutil.copyfile(filename, best_name)
 
 

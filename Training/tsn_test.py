@@ -16,7 +16,7 @@ from tsn_pytorch.transforms import *
 import cv2
 
 '''
-python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth.tar --arch resnet34
+python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth --arch resnet34
 '''
 
 # options

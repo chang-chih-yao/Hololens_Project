@@ -1,5 +1,7 @@
 # TSN-Pytorch
 
+[Origin-github](https://github.com/yjxiong/tsn-pytorch)
+
 *Now in experimental release, suggestions welcome*.
 
 **Note**: always use `git clone --recursive https://github.com/yjxiong/tsn-pytorch` to clone this project. 
@@ -8,6 +10,16 @@ Otherwise you will not be able to use the inception series CNN archs.
 This is a reimplementation of temporal segment networks (TSN) in PyTorch. All settings are kept identical to the original caffe implementation.
 
 For optical flow extraction and video list generation, you still need to use the original [TSN codebase](https://github.com/yjxiong/temporal-segment-networks).
+
+## Environment
+
+- Python 3.6
+- PyTorch 0.4.1
+- torchvision 0.2.1
+
+set PYTHONPATH：  
+![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Environment.JPG)
+
 
 ## Training
 
