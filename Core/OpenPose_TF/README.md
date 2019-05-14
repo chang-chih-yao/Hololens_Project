@@ -8,8 +8,6 @@
 
 ## Models & Performances
 
-See [experiments.md](./etc/experiments.md)
-
 ### Download Tensorflow Graph File(pb file)
 
 Before running demo, you should download graph files. You can deploy this graph on your mobile or other platforms.
@@ -73,17 +71,11 @@ The image flag MUST be relative to the src folder with no "~", i.e:
 --image ../../Desktop
 ```
 
-Then you will see the screen as below with pafmap, heatmap, result and etc.
-
-![inferent_result](./etcs/inference_result2.png)
-
 ### Realtime Webcam
 
 ```
 $ python run_webcam.py --model=mobilenet_thin --resize=432x368 --camera=0
 ```
-
-Then you will see the realtime webcam screen with estimated poses as below. This [Realtime Result](./etcs/openpose_macbook13_mobilenet2.gif) was recored on macbook pro 13" with 3.1Ghz Dual-Core CPU.
 
 ## Python Usage
 
@@ -103,15 +95,3 @@ If you installed it as a package,
 import tf_pose
 coco_style = tf_pose.infer(image_path)
 ```
-
-## ROS Support
-
-See : [etcs/ros.md](./etcs/ros.md)
-
-## Training
-
-See : [etcs/training.md](./etcs/training.md)
-
-## References
-
-See : [etcs/reference.md](./etcs/reference.md)
