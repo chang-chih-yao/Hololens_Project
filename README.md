@@ -18,23 +18,23 @@
 
 ***
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Flow_Chart2.JPG)
+![image](etcs/Flow_Chart2.JPG)
 
 ***
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Flow_Chart.png)
+![image](etcs/Flow_Chart.png)
 
 ***
 
 ## Server1 & Hololens
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/1.png)
+![image](etcs/1.png)
 
 ### 例如螺旋丸：  
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/4.gif)
+![image](etcs/4.gif)
 
 ### 在Hololens眼鏡裡面就會看到這樣：  
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/3.JPG)
+![image](etcs/3.JPG)
 
 ***
 
@@ -65,13 +65,13 @@
 
 #### 蒐集資料的地點，以及camera擺放位置：
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data1.JPG)
+![image](etcs/Collect_Data1.JPG)
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Camera%20Position.JPG)
+![image](etcs/Camera_Position.JPG)
 
 #### Dataset look like：(1 people, 1 action, 1 direction, 4 camera)
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Collect_Data2.JPG)
+![image](etcs/Collect_Data2.JPG)
 
 ***
 
@@ -111,7 +111,7 @@ Version：
 - [HoloLensCameraStream](https://github.com/VulcanTechnologies/HoloLensCameraStream)
 
 在Client裡面的Assets資料夾內，若上述全部都裝完應該會長這樣：  
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/2.JPG)
+![image](etcs/2.JPG)
 
 ***
 
