@@ -43,9 +43,11 @@ You need dependencies below.
 
 Alternatively, you can install this repo as a shared package using pip.
 1. unzip tf-pose-estimation-master.zip
-2. check requirements.txt, you can install by yourself
-3. overwrite 'tf-pose-estimation/setup.py'
-4. overwrite 'tf-pose-estimation/tf_pose/estimator.py'
+2. rename "tf-pose-estimation-master" to "tf-pose-estimation"
+3. put folder "tf-pose-estimation" in "Hololens_Project/Core/"
+4. check requirements.txt, you can install by yourself
+5. overwrite "Hololens_Project/Core/tf-pose-estimation/setup.py"
+6. overwrite "Hololens_Project/Core/tf-pose-estimation/tf_pose/estimator.py"
 
 ```bash
 $ cd tf-pose-estimation
