@@ -4,6 +4,7 @@
 - 開發平台：Win 10, GTX 1060, i7-7700k
 - 開發裝置：Microsoft Hololens 1
 - 開發工具：Python 3.6, Unity 2018.3.0f
+- 開發環境：CUDA 9.0, cuDNN 7.1
 - 技術：TensorFlow 1.9.0 (pose-estimation, human-detection, human-tracking), PyTorch 0.4.1 (action-recognition)
 
 ***
