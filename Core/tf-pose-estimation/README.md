@@ -19,23 +19,6 @@ You need dependencies below.
   - https://github.com/adamrehn/slidingwindow
   - I copied from the above git repo to modify few things.
 
-### Package Install
-
-Alternatively, you can install this repo as a shared package using pip.
-1. unzip tf-pose-estimation-master.zip
-2. check requirements.txt, you can install by yourself
-3. overwrite 'tf-pose-estimation/setup.py'
-4. overwrite 'tf-pose-estimation/tf_pose/estimator.py'
-
-```bash
-$ cd tf-pose-estimation
-$ python setup.py install
-```
-
-If setup.py cause error, delete line 15.  
-```subprocess.check_output(["bash", "models/graph/cmu/download.sh"], cwd=cwd)```  
-But make sure you have already downloaded "graph_opt.pb" in "models/graph/cmu/"
-
 ## Models & Performances
 
 See [experiments.md](./etc/experiments.md)
@@ -55,6 +38,23 @@ CMU's model graphs are too large for git, so I uploaded them on an external clou
 $ cd models/graph/cmu
 $ bash download.sh
 ```
+
+### Package Install
+
+Alternatively, you can install this repo as a shared package using pip.
+1. unzip tf-pose-estimation-master.zip
+2. check requirements.txt, you can install by yourself
+3. overwrite 'tf-pose-estimation/setup.py'
+4. overwrite 'tf-pose-estimation/tf_pose/estimator.py'
+
+```bash
+$ cd tf-pose-estimation
+$ python setup.py install
+```
+
+If setup.py cause error, delete line 15.  
+```subprocess.check_output(["bash", "models/graph/cmu/download.sh"], cwd=cwd)```  
+But make sure you have already downloaded "graph_opt.pb" in "models/graph/cmu/"
 
 ## Demo
 
