@@ -164,6 +164,7 @@ def object_detection(detection_graph, video_root, category_index, register):
             player_position = [[[-100, -100], [-100, -100]], [[-100, -100], [-100, -100]], [[-100, -100], [-100, -100]], [[-100, -100], [-100, -100]]]
             player_ID = [-1, -1, -1, -1]
             rad = 70
+            vote_ID = -1
 
             images = []
             images.append([])
@@ -212,6 +213,9 @@ def object_detection(detection_graph, video_root, category_index, register):
                     people_cou = 0
                     max_people = 2
 
+                    pre_x = 0
+                    pre_y = 0
+
                     for i in range(min(max_boxes_to_draw, boxes_new.shape[0])):
                         if scores_new is None or (scores_new[i] > min_score_thresh):
                             test1 = None
@@ -221,9 +225,19 @@ def object_detection(detection_graph, video_root, category_index, register):
 
                             #   we only do which detection class is person
                             if test1 == "person":
-                                people_cou += 1
-                                if people_cou == 2:
-                                    break
+                                test_box = boxes_new[i]
+                                height, width = frame.shape[:2]
+                                (left, right, top, bottom) = (int(test_box[1] * width), int(test_box[3] * width), int(test_box[0] * height), int(test_box[2] * height))
+                                center_x = int((left + right)/2)
+                                center_y = int((top + bottom)/2)
+                                if people_cou == 0:
+                                    pre_x = center_x
+                                    pre_y = center_y
+                                    people_cou += 1
+                                else:
+                                    if ((center_x - pre_x)**2 + (center_y - pre_y)**2) > rad**2:    # 不能距離太近 避免noise(自己影分身)
+                                        people_cou += 1
+                                        break
 
                     for i in range(min(max_boxes_to_draw, boxes_new.shape[0])):
                         if scores_new is None or (scores_new[i] > min_score_thresh):
@@ -285,19 +299,16 @@ def object_detection(detection_graph, video_root, category_index, register):
                                 cv2.circle(frame, (center_x, center_y), rad, (0, 255, 0), 2)
 
                                 ################# nearest tracking #################
-                                if player_position[cam_id][0][0] == -100 and player_position[cam_id][0][1] == -100:                               # init player 0
+                                if player_position[cam_id][0][0] == -100 and player_position[cam_id][0][1] == -100:                            # init player 0
                                     print('-------cam : %d player 0 init-------' %(cam_id))
                                     player_ID[cam_id] = 0
                                     player_position[cam_id][player_ID[cam_id]][0] = center_x
                                     player_position[cam_id][player_ID[cam_id]][1] = center_y
-                                elif player_position[cam_id][1][0] == -100 and player_position[cam_id][1][1] == -100 and people_cou == 2:         # init player 1
-                                    if ((center_x - player_position[cam_id][0][0])**2 + (center_y - player_position[cam_id][0][1])**2) > rad**2:  # 不能距離太近 避免noise(自己影分身)
-                                        print('-------cam : %d player 1 init-------' %(cam_id))
-                                        player_ID[cam_id] = 1
-                                        player_position[cam_id][player_ID[cam_id]][0] = center_x
-                                        player_position[cam_id][player_ID[cam_id]][1] = center_y
-                                    else:
-                                        max_people += 1   # 如果總共BBox有框到3個人以上  刪掉自己的影分身之外  還要能夠框到另一個人  不然max_people==0的時候就會跳出迴圈
+                                elif player_position[cam_id][1][0] == -100 and player_position[cam_id][1][1] == -100 and people_cou == 2:      # init player 1
+                                    print('-------cam : %d player 1 init-------' %(cam_id))
+                                    player_ID[cam_id] = 1
+                                    player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                    player_position[cam_id][player_ID[cam_id]][1] = center_y
                                 else:
                                     pre_0_x = player_position[cam_id][0][0]
                                     pre_0_y = player_position[cam_id][0][1]
@@ -427,18 +438,9 @@ def regist(detection_graph, category_index, register_num):
             caps.append(cap_1)
             caps.append(cap_2)
             caps.append(cap_3)
-            cv2.namedWindow('origin 0')
-            cv2.moveWindow('origin 0', 0, 0)
-            cv2.namedWindow('origin 1')
-            cv2.moveWindow('origin 1', 960, 0)
-            cv2.namedWindow('origin 2')
-            cv2.moveWindow('origin 2', 0, 540)
-            cv2.namedWindow('origin 3')
-            cv2.moveWindow('origin 3', 960, 540)
 
-            fps = 0
-            cou = 0
-            cap_flag = 0
+            cou = 0          # features count
+            cap_flag = 0     # 連續擷取4個frame的開關
 
             img_to_tensor = torchvision.transforms.ToTensor()
 
@@ -528,6 +530,7 @@ def regist(detection_graph, category_index, register_num):
                                 result = pytorch_model(torch.autograd.Variable(tensor))
                                 result_npy = result.data.cpu().numpy()
 
+                                ################### 開始擷取另外三台camera的frame (cam_0在按下'1'的時候就已經截取了) ################
                                 if cam_id == 1 and cap_flag == 1:
                                     register = np.concatenate((register, result_npy), axis=0)
                                     cv2.putText(regist_img, str(cou), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
@@ -545,6 +548,7 @@ def regist(detection_graph, category_index, register_num):
                                     cou += 1
                                     cap_flag = 0
 
+                                # 如果已經達到截取數量，就開始比對目前的影像，最像哪一張註冊的frame，並且會print出 L2 dist 跟 index
                                 if cou >= register_num:
                                     t1 = time.time()
                                     dist = np.sum((register - result_npy)**2, axis=(1, 2, 3))
@@ -556,49 +560,33 @@ def regist(detection_graph, category_index, register_num):
                                 # else:
                                 #     print(result_npy.shape)
 
+                                # 如果目前沒有在擷取，就顯示Ready，告訴使用者隨時可以按'1'，開始截取(註冊)
                                 if cap_flag == 0 and cou < register_num:
                                     cv2.putText(crop_img, 'Ready', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 3)
                                 cv2.imshow('crop ' + str(num_list[cam_id]), crop_img)
 
+
                                 key = cv2.waitKey(10)
-                                if key == 113:                               # q
+                                if key == 113:                               # press 'q'
                                     if len(register) != 0:
-                                        np.save('feature.npy', register)
+                                        np.save('feature.npy', register)     # save features array
                                         for cam_id_ in range(len(caps)):
                                             caps[cam_id_].stop()
                                         cv2.destroyAllWindows()
                                         return register
-                                elif key == 49 and cam_id == 0 and cap_flag == 0:              # press '1'
-                                    if len(register) == 0:
+                                elif key == 49 and cam_id == 0 and cap_flag == 0:    # press '1' -> 從cam_0連續擷取4個frames，一直到cam_3(會跑4個for loop)
+                                    if len(register) == 0:                           # 第一次擷取，register是空的array
                                         register = result_npy
                                         cv2.putText(regist_img, str(cou), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                                         cv2.imshow('register 0', regist_img)
                                         cou += 1
                                         cap_flag = 1
-                                    elif cou < register_num:
+                                    elif cou < register_num:                         # press '1' will no function, if features are enough
                                         register = np.concatenate((register, result_npy), axis=0)
                                         cv2.putText(regist_img, str(cou), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                                         cv2.imshow('register 0', regist_img)
                                         cou += 1
                                         cap_flag = 1
-                                # elif key == 49 and cam_id == 1:              # 1
-                                #     if cou < register_num and cou % len(caps) == 1:
-                                #         register = np.concatenate((register, result_npy), axis=0)
-                                #         cv2.putText(crop_img, str(cou), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                                #         cv2.imshow('register 1', crop_img)
-                                #         cou += 1
-                                # elif key == 50 and cam_id == 2:              # 2
-                                #     if cou < register_num and cou % len(caps) == 2:
-                                #         register = np.concatenate((register, result_npy), axis=0)
-                                #         cv2.putText(crop_img, str(cou), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                                #         cv2.imshow('register 2', crop_img)
-                                #         cou += 1
-                                # elif key == 51 and cam_id == 3:              # 3
-                                #     if cou < register_num and cou % len(caps) == 3:
-                                #         register = np.concatenate((register, result_npy), axis=0)
-                                #         cv2.putText(crop_img, str(cou), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                                #         cv2.imshow('register 3', crop_img)
-                                #         cou += 1
                                 elif key == 27:
                                     for cam_id_ in range(len(caps)):
                                         caps[cam_id_].stop()
