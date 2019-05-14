@@ -16,4 +16,4 @@
   * opencv 3.4.2
   * protoc-3.7.1-win64.zip
 
-![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Environment.JPG)
+![image](../../etcs/Environment.JPG)
