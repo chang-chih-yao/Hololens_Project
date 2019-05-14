@@ -1,4 +1,4 @@
-# Tensorflow detection model zoo
+# Tensorflow detection model zoo (copy)
 
 [Origin URL](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md)
 
