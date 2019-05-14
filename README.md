@@ -45,8 +45,7 @@
 * 我們總共請了 10 個人來幫忙錄data。  
 * 每個人做 6 個action(有一個是no action)。  
 * 每個action重複 15 次。  
-
-**總共會有大約 1000 segments video**  
+* 總共會有大約 1000 segments video  
 
 #### 蒐集資料的地點，以及camera擺放位置：
 
@@ -62,8 +61,7 @@
 * 每個人做 6 個action(有一個是no action)。  
 * 每個action要朝 3 種不同的方向(direction)做。  
 * 每個action重複 10 次。  
-
-**總共會有大約 9000 segments video**  
+* 總共會有大約 9000 segments video**  
 
 ***
 
