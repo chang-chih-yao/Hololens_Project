@@ -20,6 +20,11 @@ For optical flow extraction and video list generation, you still need to use the
 set PYTHONPATH：  
 ![image](https://github.com/chang-chih-yao/Hololens_Project/blob/master/Environment.JPG)
 
+## Model
+
+[tsn_pytorch_resnet34](https://drive.google.com/drive/folders/11U1j7s2lO1tn2PxR40CGzIxBo9B9Xwpe?usp=sharing)
+
+**please put *.pth files in "Hololens_Project/Core/tsn_pytorch/pth"**
 
 ## Training
 
