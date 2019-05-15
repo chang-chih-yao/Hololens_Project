@@ -57,6 +57,7 @@ class ipcamCapture:
     def queryframe(self):
         while (not self.isstop):
             self.status, self.Frame = self.capture.read()
+            time.sleep(0.01)
         print('close')
         self.capture.release()
         self.flag = True
