@@ -175,7 +175,7 @@ class TServer(threading.Thread):
 
             img_tsn = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
 
-            if self.count % 9 == 0:
+            if self.count % 3 == 0 and len(images) == 2:
                 images.extend([img_tsn])
                 # print(images[0].size)
                 # print(images[1].size)
@@ -184,7 +184,7 @@ class TServer(threading.Thread):
                 rst = torch.unsqueeze(rst, 0)
                 self.action = validate(model, rst)
                 
-                images.clear()
+                del images[0]
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
                 
