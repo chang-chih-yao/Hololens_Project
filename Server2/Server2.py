@@ -301,30 +301,30 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                                 cv2.circle(frame, (center_x, center_y), rad, (0, 255, 0), 2)
 
                                 ################# nearest tracking #################
-                                if player_position[cam_id][0][0] == -100 and player_position[cam_id][0][1] == -100:                            # init player 0
-                                    print('-------cam : %d player 0 init-------' %(cam_id))
-                                    player_ID[cam_id] = 0
-                                    player_position[cam_id][player_ID[cam_id]][0] = center_x
-                                    player_position[cam_id][player_ID[cam_id]][1] = center_y
-                                elif player_position[cam_id][1][0] == -100 and player_position[cam_id][1][1] == -100 and people_cou == 2:      # init player 1
-                                    print('-------cam : %d player 1 init-------' %(cam_id))
-                                    player_ID[cam_id] = 1
-                                    player_position[cam_id][player_ID[cam_id]][0] = center_x
-                                    player_position[cam_id][player_ID[cam_id]][1] = center_y
-                                else:
-                                    pre_0_x = player_position[cam_id][0][0]
-                                    pre_0_y = player_position[cam_id][0][1]
-                                    pre_1_x = player_position[cam_id][1][0]
-                                    pre_1_y = player_position[cam_id][1][1]
+                                # if player_position[cam_id][0][0] == -100 and player_position[cam_id][0][1] == -100:                            # init player 0
+                                #     print('-------cam : %d player 0 init-------' %(cam_id))
+                                #     player_ID[cam_id] = 0
+                                #     player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                #     player_position[cam_id][player_ID[cam_id]][1] = center_y
+                                # elif player_position[cam_id][1][0] == -100 and player_position[cam_id][1][1] == -100 and people_cou == 2:      # init player 1
+                                #     print('-------cam : %d player 1 init-------' %(cam_id))
+                                #     player_ID[cam_id] = 1
+                                #     player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                #     player_position[cam_id][player_ID[cam_id]][1] = center_y
+                                # else:
+                                #     pre_0_x = player_position[cam_id][0][0]
+                                #     pre_0_y = player_position[cam_id][0][1]
+                                #     pre_1_x = player_position[cam_id][1][0]
+                                #     pre_1_y = player_position[cam_id][1][1]
 
-                                    if ((center_x - pre_0_x) ** 2 + (center_y - pre_0_y) ** 2) <= ((center_x - pre_1_x) ** 2 + (center_y - pre_1_y) ** 2):
-                                        player_ID[cam_id] = 0
-                                        player_position[cam_id][player_ID[cam_id]][0] = center_x
-                                        player_position[cam_id][player_ID[cam_id]][1] = center_y
-                                    else:
-                                        player_ID[cam_id] = 1
-                                        player_position[cam_id][player_ID[cam_id]][0] = center_x
-                                        player_position[cam_id][player_ID[cam_id]][1] = center_y
+                                #     if ((center_x - pre_0_x) ** 2 + (center_y - pre_0_y) ** 2) <= ((center_x - pre_1_x) ** 2 + (center_y - pre_1_y) ** 2):
+                                #         player_ID[cam_id] = 0
+                                #         player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                #         player_position[cam_id][player_ID[cam_id]][1] = center_y
+                                #     else:
+                                #         player_ID[cam_id] = 1
+                                #         player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                #         player_position[cam_id][player_ID[cam_id]][1] = center_y
                                 
                                 ################# VGG feature tracking #################
                                 tensor = img_to_tensor(crop_img.astype(np.float32))
@@ -336,6 +336,8 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                                 dist = np.sum((features_np - result_npy)**2, axis=(1, 2, 3))
                                 dist_index = np.argmin(dist)
                                 dist_int = int(math.sqrt(dist[dist_index]))
+
+                                
 
                                 if dist_index < int(features_np.shape[0])/2:
                                     player_ID[cam_id] = 0
@@ -366,7 +368,7 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                                     rst = torch.unsqueeze(rst, 0)
                                     actions[cam_id][player_ID[cam_id]] = validate(model, rst)
                                     
-                                    images[cam_id][player_ID[cam_id]].clear()
+                                    del images[cam_id][player_ID[cam_id]][0]
                                 else:
                                     images[cam_id][player_ID[cam_id]].extend([img_tsn])
 
