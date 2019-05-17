@@ -107,3 +107,18 @@ ENV/
 *ckpt*
 *.npy
 timeline*.json
+
+# Dataset
+Dataset/my_dataset_holo/crop/1
+Dataset/my_dataset_holo/crop/2
+Dataset/my_dataset_holo/crop/2_
+Dataset/my_dataset_holo/crop/3
+Dataset/my_dataset_holo/crop/3_
+Dataset/my_dataset_holo/crop/4
+Dataset/my_dataset_holo/crop/4_
+Dataset/my_dataset_holo/crop/5
+Dataset/my_dataset_holo/crop/5_
+Dataset/my_dataset_holo/crop/6
+Dataset/my_dataset_holo/crop/6_
+
+Dataset/my_dataset_holo/Raw_data
