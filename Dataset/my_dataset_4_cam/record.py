@@ -130,4 +130,4 @@ def record(file_root):
 
 if __name__ == '__main__':
     
-    record(file_root = 'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/Raw_data/')
+    record(file_root = 'Raw_data/')
