@@ -8,12 +8,14 @@ def MOD_3():
     #size_2 = 38
 
     file_arr = ['crop/1', 'crop/2', 'crop/3', 'crop/4', 'crop/5', 'crop/6']
+    file_arr = ['crop/1', 'crop/2']
     label_arr = [' 1\n', ' 2\n', ' 3\n', ' 4\n', ' 5\n', ' 6\n']
 
     for arr in range(len(file_arr)):
         cou = 0
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
-            #print(dirPath, dirNames, fileNames)
+            dirPath = dirPath.replace('\\', '/')
+            print(dirPath, dirNames)
             s = 'D:/Dataset/Action/my_dataset/' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
             if len(fileNames) != 0:
                 if cou % 3 == 0:
