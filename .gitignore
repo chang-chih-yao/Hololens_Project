@@ -111,15 +111,20 @@ timeline*.json
 # Dataset
 Dataset/my_dataset_holo/crop/1
 Dataset/my_dataset_holo/crop/2
-Dataset/my_dataset_holo/crop/2_
+Dataset/my_dataset_holo/crop/2_start
+Dataset/my_dataset_holo/crop/2_end
 Dataset/my_dataset_holo/crop/3
-Dataset/my_dataset_holo/crop/3_
+Dataset/my_dataset_holo/crop/3_start
+Dataset/my_dataset_holo/crop/3_end
 Dataset/my_dataset_holo/crop/4
-Dataset/my_dataset_holo/crop/4_
+Dataset/my_dataset_holo/crop/4_start
+Dataset/my_dataset_holo/crop/4_end
 Dataset/my_dataset_holo/crop/5
-Dataset/my_dataset_holo/crop/5_
+Dataset/my_dataset_holo/crop/5_start
+Dataset/my_dataset_holo/crop/5_end
 Dataset/my_dataset_holo/crop/6
-Dataset/my_dataset_holo/crop/6_
+Dataset/my_dataset_holo/crop/6_start
+Dataset/my_dataset_holo/crop/6_end
 
 Dataset/my_dataset_holo/Raw_data
 
@@ -143,17 +148,7 @@ Dataset/my_dataset_4_cam/6
 
 Dataset/my_dataset_4_cam/crop/1
 Dataset/my_dataset_4_cam/crop/2
-Dataset/my_dataset_4_cam/crop/2_start
-Dataset/my_dataset_4_cam/crop/2_end
 Dataset/my_dataset_4_cam/crop/3
-Dataset/my_dataset_4_cam/crop/3_start
-Dataset/my_dataset_4_cam/crop/3_end
 Dataset/my_dataset_4_cam/crop/4
-Dataset/my_dataset_4_cam/crop/4_start
-Dataset/my_dataset_4_cam/crop/4_end
 Dataset/my_dataset_4_cam/crop/5
-Dataset/my_dataset_4_cam/crop/5_start
-Dataset/my_dataset_4_cam/crop/5_end
 Dataset/my_dataset_4_cam/crop/6
-Dataset/my_dataset_4_cam/crop/6_start
-Dataset/my_dataset_4_cam/crop/6_end
