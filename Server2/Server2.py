@@ -166,6 +166,7 @@ def object_detection(detection_graph, video_root, category_index, features_np):
             player_ID = [-1, -1, -1, -1]
             rad = 90          # 在畫面中，兩個 BBOX 相距小於rad的時候，就算遮擋，就會直接把另一個BBOX忽略掉
             vote_ID = -1
+            
 
             images = []
             images.append([])
@@ -185,12 +186,16 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                 actions[temp].append(0)
                 actions[temp].append(0)
             
-
             while(True):
                 ret_flag, frame_ = caps[0].getframe()
                 if ret_flag == False:
                     time.sleep(0.2)
-                    continue
+                else:
+                    break
+
+            while(True):
+                player_Stats = [[0,0], [0,0], [0,0], [0,0]]
+
                 for cam_id in range(len(caps)):
                     ret, frame = caps[cam_id].getframe()
                     frame_copy = frame.copy()
@@ -213,6 +218,9 @@ def object_detection(detection_graph, video_root, category_index, features_np):
 
                     people_cou = 0
                     max_people = 2
+                    pre_dist = None
+                    img_tsn_0 = None
+                    img_tsn_1 = None
 
                     pre_x = 0   # 存第一個被偵測到 person 的BBOX的中心點座標 x
                     pre_y = 0
@@ -301,6 +309,14 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                                 cv2.circle(frame, (center_x, center_y), 4, (0, 255, 0), 5)    # tracking point
                                 cv2.circle(frame, (center_x, center_y), rad, (0, 255, 0), 2)
 
+                                if max_people == 1:     # 第一個是 person 的 BBOX。(如果有很多 person 的話，第一個 person 是 confidence 最高的)
+                                    pre_x = center_x
+                                    pre_y = center_y
+                                elif max_people == 0:   # 第二個people
+                                    if ((center_x - pre_x)**2 + (center_y - pre_y)**2) < rad**2:    # 不能距離太近 避免noise(自己影分身)
+                                        max_people += 1
+                                        continue
+
                                 ################# nearest tracking #################
                                 # if player_position[cam_id][0][0] == -100 and player_position[cam_id][0][1] == -100:                            # init player 0
                                 #     print('-------cam : %d player 0 init-------' %(cam_id))
@@ -337,20 +353,40 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                                 dist = np.sum((features_np - result_npy)**2, axis=(1, 2, 3))
                                 dist_index = np.argmin(dist)
                                 dist_int = int(math.sqrt(dist[dist_index]))
+                                if people_cou == 2 and max_people == 1:  # 總共會有兩個人，目前是第一個人
+                                    pre_dist = dist_int   # 先把第一個人的feature distance存起來
 
-                                
-
-                                if dist_index < int(features_np.shape[0])/2:
+                                '''
+                                if dist_index < int(features_np.shape[0])/2:    # index在前，代表此feature為player 0
+                                    if max_people == 0:                         # 目前是第二個人
+                                        if player_Stats[cam_id][0] == 1:        # 代表第一個人，也把他判斷成 player 0，代表兩個人的feature太接近
+                                            if pre_dist < dist_int:             # 第一個人的feature比較接近 player 0
+                                                player_ID[cam_id] = 1
+                                                player_Stats[cam_id][1] = 1
+                                                player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                                player_position[cam_id][player_ID[cam_id]][1] = center_y
                                     player_ID[cam_id] = 0
+                                    player_Stats[cam_id][0] = 1
                                     player_position[cam_id][player_ID[cam_id]][0] = center_x
                                     player_position[cam_id][player_ID[cam_id]][1] = center_y
-                                else:
+                                else:                                           # index在後，代表此feature為第二個人的
                                     player_ID[cam_id] = 1
+                                    player_Stats[cam_id][1] = 1
                                     player_position[cam_id][player_ID[cam_id]][0] = center_x
                                     player_position[cam_id][player_ID[cam_id]][1] = center_y
 
+                                '''
 
-
+                                if dist_index < int(features_np.shape[0])/2:    # index在前，代表此feature為player 0
+                                    player_ID[cam_id] = 0
+                                    player_Stats[cam_id][0] = 1
+                                    player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                    player_position[cam_id][player_ID[cam_id]][1] = center_y
+                                else:                                           # index在後，代表此feature為第二個人的
+                                    player_ID[cam_id] = 1
+                                    player_Stats[cam_id][1] = 1
+                                    player_position[cam_id][player_ID[cam_id]][0] = center_x
+                                    player_position[cam_id][player_ID[cam_id]][1] = center_y
                                 # if human == 1:
                                 #     human = 0
                                 # else:

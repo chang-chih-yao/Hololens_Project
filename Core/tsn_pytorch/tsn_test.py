@@ -22,7 +22,7 @@ python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth --arch resnet34
 # options
 parser = argparse.ArgumentParser(
     description="Standard video-level testing")
-parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics', '21', '6'])
+parser.add_argument('dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics', '21', '6', '7'])
 parser.add_argument('modality', type=str, choices=['RGB', 'Flow', 'RGBDiff'])
 parser.add_argument('test_list', type=str)
 parser.add_argument('weights', type=str)
@@ -60,6 +60,8 @@ def main():
         num_class = 21
     elif args.dataset == '6':
         num_class = 6
+    elif args.dataset == '7':
+        num_class = 7
     else:
         raise ValueError('Unknown dataset '+args.dataset)
     

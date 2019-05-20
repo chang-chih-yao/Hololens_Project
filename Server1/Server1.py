@@ -57,13 +57,13 @@ trans = trans = torchvision.transforms.Compose([
 
 
 ################################### Socket #######################################
-HOST = '192.168.11.107'
+HOST = '192.168.208.231'
 PORT = 9000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # reuse tcp
 sock.bind((HOST, PORT))
-sock.listen(2)
+sock.listen(3)
 print('Wait for connection...')
 
 global_action = 0
@@ -190,9 +190,9 @@ class TServer(threading.Thread):
                 
 
 
-            co_str = co_str + str(self.count) + ',' + str(self.action)
+            co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action)
             co_str = bytes(co_str, 'ascii')
-            print(co_str, str(global_action))
+            #print(co_str, str(global_action))
             self.socket.send(co_str)
             
             self.fps_time = time.time()

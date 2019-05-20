@@ -7,30 +7,36 @@ import os
 def main():
     print('folder name:')
     my_str = input()
-    if not os.path.exists('D:/Dataset/Action/my_dataset/Raw_data/' + my_str + '/'):
-        os.mkdir('D:/Dataset/Action/my_dataset/Raw_data/' + my_str + '/')
+    if not os.path.exists('Raw_data/' + my_str + '/'):
+        os.mkdir('Raw_data/' + my_str + '/')
     else:
         print('folder existed, continue?(y/n)')
         zz = input()
         if zz == 'n':
             exit()
 
-    HOST = '192.168.11.130'  # Standard loopback interface address (localhost)
+    HOST = '192.168.208.231'
     PORT = 9000
 
-    fps_time = 0
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # reuse tcp
+    sock.bind((HOST, PORT))
+    sock.listen(3)
+    print('Wait for connection...')
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
-    print("Connect")
+    fps_time = 0
 
     count = 1
     data = b''
 
+    ID = sock.recv(1024)
+    print(ID)
+    sock.send(b'OK')
+
     while(True):
         data = b''
 
-        temp_data = s.recv(4096)
+        temp_data = sock.recv(4096)
         frame_size = temp_data[:4]
         frame_size_int = int.from_bytes(frame_size, byteorder='big')
         print(frame_size_int)
@@ -39,7 +45,7 @@ def main():
         while(True):
             if len(data) == frame_size_int:
                 break
-            temp_data = s.recv(4096)
+            temp_data = sock.recv(4096)
             data += temp_data
 
 
@@ -47,11 +53,11 @@ def main():
         dec_img = cv2.imdecode(frame, 1)
 
 
-        img_dir = 'D:/Dataset/Action/my_dataset/Raw_data/' + my_str + '/img_{:05d}.jpg'.format(count)
+        img_dir = 'Raw_data/' + my_str + '/img_{:05d}.jpg'.format(count)
         cv2.imwrite(img_dir, dec_img, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-        str_send = '0,0,0,0,0,0,0,0,0,0,0,0,0,0' + ',' + str(count) + ',0'
+        str_send = '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,' + str(count) + ',0,0'
         str_send = bytes(str_send, 'ascii')
-        s.send(str_send)
+        sock.send(str_send)
         #s.send(b'0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         cv2.putText(dec_img,
                     "FPS: %f" % (1.0 / (time.time() - fps_time)),

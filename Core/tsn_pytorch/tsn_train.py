@@ -35,6 +35,8 @@ def main():
         num_class = 21
     elif args.dataset == '6':
         num_class = 6
+    elif args.dataset == '7':
+        num_class = 7
     else:
         raise ValueError('Unknown dataset '+args.dataset)
 
