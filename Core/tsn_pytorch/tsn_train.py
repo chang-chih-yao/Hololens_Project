@@ -15,7 +15,8 @@ from tsn_pytorch.transforms import *
 from tsn_pytorch.opts import parser
 
 '''
-python tsn_train.py 21 RGB my_train.txt my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 60 -b 16 -j 0 --dropout 0.8 --gpus 0
+$ python tsn_train.py 21 RGB my_train.txt my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 60 -b 16 -j 0 --dropout 0.8 --gpus 0
+$ python tsn_train.py 7 RGB ..\..\Dataset\my_dataset_holo\my_train.txt ..\..\Dataset\my_dataset_holo\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 60 -b 16 -j 0 --dropout 0.8 --gpus 0
 '''
 
 best_prec1 = 0

@@ -16,7 +16,8 @@ from tsn_pytorch.transforms import *
 import cv2
 
 '''
-python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth --arch resnet34
+$ python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth --arch resnet34
+$ python tsn_test.py 7 RGB ..\..\Dataset\my_dataset_holo\my_test.txt pth\holo_2019_0521_6_actions_7_class.pth --arch resnet34
 '''
 
 # options
