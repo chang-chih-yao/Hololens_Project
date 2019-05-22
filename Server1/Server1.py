@@ -66,7 +66,8 @@ sock.bind((HOST, PORT))
 sock.listen(3)
 print('Wait for connection...')
 
-global_action = 0
+global_action_p0 = 0
+global_action_p1 = 0
 
 def validate(model, rst):
 
@@ -91,7 +92,7 @@ def openpose_coordinate_to_str(key_points):
     return my_str
 
 class TServer(threading.Thread):
-    def __init__(self, socket, adr, count, action, fps_time):
+    def __init__(self, socket, lock, adr, count, action, fps_time):
         threading.Thread.__init__(self)
         self.socket = socket
         self.address= adr
@@ -109,7 +110,7 @@ class TServer(threading.Thread):
         print(ID)
         self.socket.send(b'OK')
 
-        if ID == b'holo':
+        if ID == b'holo_P0':
             self.run_holo(window_name)
         elif ID == b'4cam':
             self.run_4cam(window_name)
@@ -119,7 +120,8 @@ class TServer(threading.Thread):
 
     def run_holo(self, window_name):
 
-        global global_action
+        global global_action_p0
+        global global_action_p1
 
         images = list()
 
@@ -190,9 +192,9 @@ class TServer(threading.Thread):
                 
 
 
-            co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action)
+            co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
             co_str = bytes(co_str, 'ascii')
-            #print(co_str, str(global_action))
+            #print(str(global_action))
             self.socket.send(co_str)
             
             self.fps_time = time.time()
@@ -208,12 +210,20 @@ class TServer(threading.Thread):
         self.socket.close()
 
     def run_4cam(self, window_name):
-        global global_action
+        global global_action_p0
+        global global_action_p1
         while(True):
             action_byte = self.socket.recv(1024)
             if action_byte == b'bye':
                 break
             print(action_byte)
+            act_p0 = int(bytes.decode(action_byte).split(',')[0])
+            act_p1 = int(bytes.decode(action_byte).split(',')[1])
+
+            global_action_p0 = int((act_p0 + 2)/4) + 1
+            global_action_p1 = int((act_p1 + 2)/4) + 1
+
+            '''
             if action_byte == b'1':
                 global_action = 1
             elif action_byte == b'2' or action_byte == b'3' or action_byte == b'4' or action_byte == b'5':
@@ -226,16 +236,32 @@ class TServer(threading.Thread):
                 global_action = 5
             elif action_byte == b'18' or action_byte == b'19' or action_byte == b'20' or action_byte == b'21':
                 global_action = 6
+            '''
                 
             self.socket.send(b'OK')
 
         print ('Client %s:%s disconnected.' % self.address)
         self.socket.close()
 
-if __name__ == '__main__':
+class GameSystem(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.address= adr
 
+    def run(self):
+        global global_action_p0
+        global global_action_p1
+        while(True):
+            print(global_action_p0)
+            time.sleep(1)
+
+
+if __name__ == '__main__':
+    GameSystem().start()
+
+    lock=threading.Lock()
     while True:
         (client, adr) = sock.accept()
-        TServer(client, adr, 1, 0, 0).start()
+        TServer(client, adr, lock, 1, 0, 0).start()
 
 

@@ -445,7 +445,12 @@ def object_detection(detection_graph, video_root, category_index, features_np):
                 
                 print('(' + str(player_position[0][0][0]), str(player_position[0][0][1]) + ') | (' + str(player_position[0][1][0]), str(player_position[0][1][1]) + ')')
                 # camera 0 : (player_0 x ,player_0 y) | (player_1 x, players_1, y)
-                byte_str = bytes(str(actions[0][0]), 'ascii')
+                actions_np = np.array(actions)
+                cou_p0 = np.bincount(actions_np[:, 0])
+                cou_p1 = np.bincount(actions_np[:, 1])
+                act_p0 = np.argmax(cou_p0)
+                act_p1 = np.argmax(cou_p1)
+                byte_str = bytes(str(act_p0) + ',' + str(act_p1), 'ascii')
                 sock.send(byte_str)
                 print(1/(time.time()-fps))
                 fps = time.time()
