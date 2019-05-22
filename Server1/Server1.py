@@ -27,13 +27,13 @@ e = TfPoseEstimator(get_graph_path('mobilenet_v2_large'), target_size=(432, 368)
 
 ############################## Action Recognition ######################################
 global num_class
-num_class = 6
+num_class = 7
 
 model = TSN(num_class, 3, 'RGB',
             base_model='resnet34',
             consensus_type='avg', dropout=0.7)
 
-checkpoint = torch.load('D:\\Code\\Action_Recognition\\tsn_pytorch\\pth\\holo_2019_0314_6_actions.pth')
+checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_0521_6_actions_7_class.pth')
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
@@ -57,7 +57,7 @@ trans = trans = torchvision.transforms.Compose([
 
 
 ################################### Socket #######################################
-HOST = '192.168.208.231'
+HOST = '192.168.11.107'
 PORT = 9000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp

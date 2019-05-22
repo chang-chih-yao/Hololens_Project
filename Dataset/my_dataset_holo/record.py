@@ -15,7 +15,7 @@ def main():
         if zz == 'n':
             exit()
 
-    HOST = '192.168.208.231'
+    HOST = '192.168.11.107'
     PORT = 9000
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
@@ -23,6 +23,7 @@ def main():
     sock.bind((HOST, PORT))
     sock.listen(3)
     print('Wait for connection...')
+    addr = sock.accept()
 
     fps_time = 0
 
