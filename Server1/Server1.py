@@ -68,6 +68,11 @@ print('Wait for connection...')
 
 global_action_p0 = 0
 global_action_p1 = 0
+gamepoint_p0 = 10
+gamepoint_p1 = 10
+p0_lose = 0
+p1_lose = 0
+test_action_p1 = 0
 
 def validate(model, rst):
 
@@ -92,7 +97,7 @@ def openpose_coordinate_to_str(key_points):
     return my_str
 
 class TServer(threading.Thread):
-    def __init__(self, socket, lock, adr, count, action, fps_time):
+    def __init__(self, socket, adr, count, action, fps_time):
         threading.Thread.__init__(self)
         self.socket = socket
         self.address= adr
@@ -122,6 +127,10 @@ class TServer(threading.Thread):
 
         global global_action_p0
         global global_action_p1
+        global gamepoint_p0
+        global gamepoint_p1
+        global p0_lose
+        global test_action_p1
 
         images = list()
 
@@ -185,7 +194,7 @@ class TServer(threading.Thread):
                 rst = trans(images)
                 rst = torch.unsqueeze(rst, 0)
                 self.action = validate(model, rst)
-                
+                test_action_p1 = self.action
                 del images[0]
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
@@ -193,12 +202,16 @@ class TServer(threading.Thread):
 
 
             co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
+            co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_lose)
             co_str = bytes(co_str, 'ascii')
+            print(co_str)
             #print(str(global_action))
             self.socket.send(co_str)
             
             self.fps_time = time.time()
             
+            if p0_lose == 1:
+                break
 
             self.count += 1
 
@@ -246,22 +259,54 @@ class TServer(threading.Thread):
 class GameSystem(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        self.address= adr
 
     def run(self):
         global global_action_p0
         global global_action_p1
+        global gamepoint_p0
+        global gamepoint_p1
+        global p0_lose
+        global test_action_p1
+
         while(True):
-            print(global_action_p0)
+            f = 0
+            if test_action_p1 == 3:
+                for i in range(5):
+                    time.sleep(0.1)
+                    if test_action_p1 != 3:
+                        f = 1
+                        break
+                if f == 0:     # 代表連續1秒，都是這個動作，判定對方確實是在做這個動作
+                    gamepoint_p0 -= 2
+                    time.sleep(2)  # 對方施放每一招，都會有一個等待時間
+            
+            if gamepoint_p0 == 0:
+                print('p0 lose, p1 win')
+                p0_lose = 1
+                time.sleep(3)
+                print('system ready')
+                p0_lose = 0
+                gamepoint_p0 = 10
+                gamepoint_p1 = 10
+            elif gamepoint_p1 == 0:
+                print('p0 win, p1 lose')
+                gamepoint_p0 = 10
+                gamepoint_p1 = 10
+            time.sleep(0.1)
+        '''
+        while(True):
+            print(str(global_action_p0) + ' | ' + str(global_action_p1))
             time.sleep(1)
+        '''
 
 
 if __name__ == '__main__':
     GameSystem().start()
 
-    lock=threading.Lock()
+    lock = threading.Lock()
     while True:
         (client, adr) = sock.accept()
-        TServer(client, adr, lock, 1, 0, 0).start()
+        print(adr)
+        TServer(client, adr, 1, 0, 0).start()
 
 
