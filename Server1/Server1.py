@@ -204,7 +204,7 @@ class TServer(threading.Thread):
             co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_lose)
             co_str = bytes(co_str, 'ascii')
-            print(co_str)
+            #print(co_str)
             #print(str(global_action))
             self.socket.send(co_str)
             
