@@ -150,7 +150,7 @@ def validate(val_loader, model, crop_size):
     #         continue
     #     dict[int(lines2[i].split(' ')[0])] = lines2[i].split(' ')[1].replace('\n', '')
 
-    dict = {1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6'}
+    dict = {1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7'}
 
     # switch to evaluate mode
     model.eval()
@@ -233,14 +233,19 @@ def validate(val_loader, model, crop_size):
 
         # print(i)
 
+        '''
         if i % 5 == 0:
             print(('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Prec@1 ({top1.avg:.3f})'.format(
                    i, len(val_loader), batch_time=batch_time,
                    top1=top1)))
-
         '''
+        
+        print(('Test: [{0}/{1}]\t'
+                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                  'Prec@1 ({top1.avg:.3f})'.format( i, len(val_loader), batch_time=batch_time, top1=top1 )))
+        
         error_flag = 0
         isBreak = 0
         for j in range(3):
@@ -251,6 +256,7 @@ def validate(val_loader, model, crop_size):
             if tar_val != top1_val:
                 cv2.putText(img, "False", (100, 220),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                 error_flag = 1
+                print('error : ' + str(tar_val) + '->' + str(top1_val))
             cv2.putText(img, dict[top1_val], (60, 30),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.imshow('test', img)
             if cv2.waitKey(200) == 27:
@@ -264,7 +270,7 @@ def validate(val_loader, model, crop_size):
                 break
         elif isBreak == 1:
             break
-        '''
+        
 
 
     # print(time.time() - total)     # total time

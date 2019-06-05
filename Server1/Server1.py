@@ -63,7 +63,7 @@ PORT = 9000
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # reuse tcp
 sock.bind((HOST, PORT))
-sock.listen(3)
+sock.listen(4)
 print('Wait for connection...')
 
 global_action_p0 = 0
@@ -73,6 +73,11 @@ gamepoint_p1 = 10
 p0_lose = 0
 p1_lose = 0
 test_action_p1 = 0
+data = b''
+data_cp = b''
+frame_size = None
+co_str_cp = ''
+
 
 def validate(model, rst):
 
@@ -90,20 +95,17 @@ def validate(model, rst):
     
     return top1_val
 
-def openpose_coordinate_to_str(key_points):
-    my_str = ''
-    for i in range(len(key_points)):
-        my_str = my_str + str(key_points[i][0]) + ',' + str(key_points[i][1]) + ','
-    return my_str
+
 
 class TServer(threading.Thread):
-    def __init__(self, socket, adr, count, action, fps_time):
+    def __init__(self, socket, adr, count, action, fps_time, lock):
         threading.Thread.__init__(self)
         self.socket = socket
         self.address= adr
         self.count = count
         self.action = action
         self.fps_time = fps_time
+        self.lock = lock
         
 
     def run(self):
@@ -116,14 +118,58 @@ class TServer(threading.Thread):
         self.socket.send(b'OK')
 
         if ID == b'holo_P0':
-            self.run_holo(window_name)
+            self.run_holo(window_name, 'P0')
+        elif ID == b'holo_P1':
+            self.run_holo(window_name, 'P1')
         elif ID == b'4cam':
             self.run_4cam(window_name)
+        elif ID == b'Unity_demo':
+            self.run_demo(window_name)
         else:
             print('wrong ID' + ' : ' + str(ID))
             self.socket.close()
 
-    def run_holo(self, window_name):
+    def openpose_coordinate_to_str(self, key_points):
+        my_str = ''
+        for i in range(len(key_points)):
+            my_str = my_str + str(key_points[i][0]) + ',' + str(key_points[i][1]) + ','
+        return my_str
+
+    def run_demo(self, window_name):
+        global global_action_p0
+        global global_action_p1
+        global gamepoint_p0
+        global gamepoint_p1
+        global p0_lose
+        global test_action_p1
+        global data
+        global frame_size
+        global data_cp
+        global co_str_cp
+
+        # temp_data = self.socket.recv(1024)
+        # print(temp_data)
+
+        # self.socket.send(frame_size)
+        # self.socket.send(data_cp)
+
+        while(True):
+            zz = self.socket.recv(1024)
+            if zz == b'bye':
+                break
+            # print(zz)
+            # frame_size_int = int.from_bytes(frame_size, byteorder='big')
+            # print(frame_size_int)
+            self.socket.send(frame_size)
+            self.socket.send(data_cp)
+            self.socket.send(co_str)
+
+
+        print ('Client %s:%s disconnected.' % self.address)
+        self.socket.close()
+
+
+    def run_holo(self, window_name, player):
 
         global global_action_p0
         global global_action_p1
@@ -131,41 +177,47 @@ class TServer(threading.Thread):
         global gamepoint_p1
         global p0_lose
         global test_action_p1
+        global data
+        global frame_size
+        global data_cp
+        global co_str_cp
 
         images = list()
 
         while(True):
-        
-            data = b''
 
+            data = b''
             temp_data = self.socket.recv(4096)
             frame_size = temp_data[:4]
             frame_size_int = int.from_bytes(frame_size, byteorder='big')
             #print(frame_size_int)
             temp_data = temp_data[4:]
+
             data += temp_data
             while(True):
                 if len(data) == frame_size_int:
                     break
                 temp_data = self.socket.recv(4096)
                 data += temp_data
-                
+            
+            data_cp = data
             frame = np.fromstring(data, dtype=np.uint8)
             dec_img = cv2.imdecode(frame, 1)
-            
         
             crop_img = dec_img.copy()
 
 
+
+            self.lock.acquire()
             humans = e.inference(dec_img, resize_to_default=True, upsample_size=4.0)
             key_points = TfPoseEstimator.get_keypoints(dec_img, humans)
             img = TfPoseEstimator.draw_one_human(dec_img, humans, imgcopy=False, score=0.8)
 
-            co_str = openpose_coordinate_to_str(key_points)
+            co_str = self.openpose_coordinate_to_str(key_points)
 
             cv2.putText(img, "FPS: %f" % (1.0 / (time.time() - self.fps_time)),
                         (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.imshow(window_name, img)
+            cv2.imshow(window_name + player, img)
 
 
             if key_points[1][0] == 0 or key_points[1][1] == 0:
@@ -199,11 +251,12 @@ class TServer(threading.Thread):
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
                 
-
+            self.lock.release()
 
             co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_lose)
             co_str = bytes(co_str, 'ascii')
+            co_str_cp = co_str
             #print(co_str)
             #print(str(global_action))
             self.socket.send(co_str)
@@ -218,7 +271,7 @@ class TServer(threading.Thread):
             if cv2.waitKey(1) == 27:
                 break
 
-        cv2.destroyWindow(window_name)
+        cv2.destroyWindow(window_name + player)
         print ('Client %s:%s disconnected.' % self.address)
         self.socket.close()
 
@@ -299,14 +352,23 @@ class GameSystem(threading.Thread):
             time.sleep(1)
         '''
 
+class my_NN(threading.Thread):
+    def __init__(self, count, action):
+        threading.Thread.__init__(self)
+        self.count = count
+        self.action = action
+
+    def run(self):
+        global dec_img
 
 if __name__ == '__main__':
+    lock = threading.Lock()
     GameSystem().start()
 
     lock = threading.Lock()
     while True:
         (client, adr) = sock.accept()
         print(adr)
-        TServer(client, adr, 1, 0, 0).start()
+        TServer(client, adr, 1, 0, 0, lock).start()
 
 
