@@ -5,6 +5,7 @@ import cv2
 import threading
 import argparse
 import logging
+import datetime
 
 import tensorflow as tf
 
@@ -70,12 +71,12 @@ global_action_p0 = 0
 global_action_p1 = 0
 gamepoint_p0 = 10
 gamepoint_p1 = 10
-p0_lose = 0
-p1_lose = 0
+p0_win_lose = 0       # 1->win, 2->lose
+p1_win_lose = 0       # 1->win, 2->lose
 test_action_p1 = 0
 data = b''
 data_cp = b''
-frame_size = None
+frame_size_cp = None
 co_str_cp = ''
 
 
@@ -109,9 +110,10 @@ class TServer(threading.Thread):
         
 
     def run(self):
+        print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
         print ('Client %s:%s connected.' % self.address)
         window_name = str(self.address[1])
-        print('port : %s' % window_name)
+        #print('port : %s' % window_name)
 
         ID = self.socket.recv(1024)
         print(ID)
@@ -125,6 +127,10 @@ class TServer(threading.Thread):
             self.run_4cam(window_name)
         elif ID == b'Unity_demo':
             self.run_demo(window_name)
+        elif ID == b'bye':
+            print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
+            print ('Client %s:%s disconnected.' % self.address)
+            self.socket.close()
         else:
             print('wrong ID' + ' : ' + str(ID))
             self.socket.close()
@@ -140,18 +146,13 @@ class TServer(threading.Thread):
         global global_action_p1
         global gamepoint_p0
         global gamepoint_p1
-        global p0_lose
+        global p0_win_lose
         global test_action_p1
         global data
-        global frame_size
+        global frame_size_cp
         global data_cp
         global co_str_cp
 
-        # temp_data = self.socket.recv(1024)
-        # print(temp_data)
-
-        # self.socket.send(frame_size)
-        # self.socket.send(data_cp)
 
         while(True):
             zz = self.socket.recv(1024)
@@ -160,12 +161,12 @@ class TServer(threading.Thread):
             # print(zz)
             # frame_size_int = int.from_bytes(frame_size, byteorder='big')
             # print(frame_size_int)
-            self.socket.send(frame_size)
+            self.socket.send(frame_size_cp)
             self.socket.send(data_cp)
-            self.socket.send(co_str)
+            self.socket.send(co_str_cp)
 
-
-        print ('Client %s:%s disconnected.' % self.address)
+        print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
+        print ('Client %s:%s disconnected. (run_demo)' % self.address)
         self.socket.close()
 
 
@@ -175,10 +176,11 @@ class TServer(threading.Thread):
         global global_action_p1
         global gamepoint_p0
         global gamepoint_p1
-        global p0_lose
+        global p0_win_lose
+        global p1_win_lose
         global test_action_p1
         global data
-        global frame_size
+        global frame_size_cp
         global data_cp
         global co_str_cp
 
@@ -187,20 +189,27 @@ class TServer(threading.Thread):
         while(True):
 
             data = b''
-            temp_data = self.socket.recv(4096)
-            frame_size = temp_data[:4]
-            frame_size_int = int.from_bytes(frame_size, byteorder='big')
-            #print(frame_size_int)
-            temp_data = temp_data[4:]
-
-            data += temp_data
-            while(True):
-                if len(data) == frame_size_int:
-                    break
+            try:
                 temp_data = self.socket.recv(4096)
+                frame_size = temp_data[:4]
+                frame_size_int = int.from_bytes(frame_size, byteorder='big')
+                #print(frame_size_int)
+                temp_data = temp_data[4:]
+
                 data += temp_data
-            
-            data_cp = data
+                while(True):
+                    if len(data) == frame_size_int:
+                        break
+                    temp_data = self.socket.recv(4096)
+                    data += temp_data
+            except ConnectionResetError as ee:
+                #print('hololens close')
+                p0_win_lose = 0
+                p1_win_lose = 0
+                gamepoint_p0 = 10
+                gamepoint_p1 = 10
+                break
+
             frame = np.fromstring(data, dtype=np.uint8)
             dec_img = cv2.imdecode(frame, 1)
         
@@ -254,25 +263,37 @@ class TServer(threading.Thread):
             self.lock.release()
 
             co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
-            co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_lose)
+            co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose)
             co_str = bytes(co_str, 'ascii')
-            co_str_cp = co_str
             #print(co_str)
             #print(str(global_action))
-            self.socket.send(co_str)
-            
-            self.fps_time = time.time()
-            
-            if p0_lose == 1:
-                break
 
+            ####################### for unity_demo data #####################
+            frame_size_cp = frame_size
+            data_cp = data
+            co_str_cp = co_str
+            
+            try:
+                self.socket.send(co_str)
+            except ConnectionResetError as ee:
+                #print('hololens close')
+                p0_win_lose = 0
+                p1_win_lose = 0
+                gamepoint_p0 = 10
+                gamepoint_p1 = 10
+                break
+            self.fps_time = time.time()
             self.count += 1
+
+            if p0_win_lose == 2:     # p0 lose
+                break
 
             if cv2.waitKey(1) == 27:
                 break
 
         cv2.destroyWindow(window_name + player)
-        print ('Client %s:%s disconnected.' % self.address)
+        print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
+        print ('Client %s:%s disconnected. (HoloLens)' % self.address)
         self.socket.close()
 
     def run_4cam(self, window_name):
@@ -306,7 +327,8 @@ class TServer(threading.Thread):
                 
             self.socket.send(b'OK')
 
-        print ('Client %s:%s disconnected.' % self.address)
+        print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
+        print ('Client %s:%s disconnected. (run_4cam)' % self.address)
         self.socket.close()
 
 class GameSystem(threading.Thread):
@@ -318,7 +340,7 @@ class GameSystem(threading.Thread):
         global global_action_p1
         global gamepoint_p0
         global gamepoint_p1
-        global p0_lose
+        global p0_win_lose
         global test_action_p1
 
         while(True):
@@ -329,23 +351,31 @@ class GameSystem(threading.Thread):
                     if test_action_p1 != 3:
                         f = 1
                         break
-                if f == 0:     # 代表連續1秒，都是這個動作，判定對方確實是在做這個動作
+                if f == 0:     # 代表連續0.5秒，都是這個動作，判定對方確實是在做這個動作
                     gamepoint_p0 -= 2
-                    time.sleep(2)  # 對方施放每一招，都會有一個等待時間
+                    time.sleep(2)  # 對方施放每一招，都會有一個等待時間(硬直2秒)
             
             if gamepoint_p0 == 0:
                 print('p0 lose, p1 win')
-                p0_lose = 1
+                p0_win_lose = 2    # p0 lose
+                p1_win_lose = 1    # p1 win
                 time.sleep(3)
-                print('system ready')
-                p0_lose = 0
+                print('---------- Game system ready ----------')
+                p0_win_lose = 0    # init
+                p1_win_lose = 0    # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
             elif gamepoint_p1 == 0:
                 print('p0 win, p1 lose')
+                p0_win_lose = 1    # p0 lose
+                p1_win_lose = 2    # p1 win
+                time.sleep(3)
+                print('---------- Game system ready ----------')
+                p0_win_lose = 0    # init
+                p1_win_lose = 0    # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
-            time.sleep(0.1)
+            time.sleep(0.05)
         '''
         while(True):
             print(str(global_action_p0) + ' | ' + str(global_action_p1))
@@ -368,7 +398,6 @@ if __name__ == '__main__':
     lock = threading.Lock()
     while True:
         (client, adr) = sock.accept()
-        print(adr)
         TServer(client, adr, 1, 0, 0, lock).start()
 
 
