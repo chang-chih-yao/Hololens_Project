@@ -99,7 +99,7 @@ def validate(model, rst):
 
 
 class TServer(threading.Thread):
-    def __init__(self, socket, adr, count, action, fps_time, lock):
+    def __init__(self, socket, adr, lock, count=1, action=0, fps_time=0):
         threading.Thread.__init__(self)
         self.socket = socket
         self.address= adr
@@ -217,7 +217,7 @@ class TServer(threading.Thread):
 
 
 
-            self.lock.acquire()
+            #self.lock.acquire()
             humans = e.inference(dec_img, resize_to_default=True, upsample_size=4.0)
             key_points = TfPoseEstimator.get_keypoints(dec_img, humans)
             img = TfPoseEstimator.draw_one_human(dec_img, humans, imgcopy=False, score=0.8)
@@ -260,7 +260,7 @@ class TServer(threading.Thread):
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
                 
-            self.lock.release()
+            #self.lock.release()
 
             co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose)
@@ -395,9 +395,8 @@ if __name__ == '__main__':
     lock = threading.Lock()
     GameSystem().start()
 
-    lock = threading.Lock()
     while True:
         (client, adr) = sock.accept()
-        TServer(client, adr, 1, 0, 0, lock).start()
+        TServer(client, adr, lock, count=1, action=0, fps_time=0).start()
 
 
