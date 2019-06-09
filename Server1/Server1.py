@@ -73,7 +73,8 @@ gamepoint_p0 = 10
 gamepoint_p1 = 10
 p0_win_lose = 0       # 1->win, 2->lose
 p1_win_lose = 0       # 1->win, 2->lose
-test_action_p1 = 0
+holo_action_p0 = 0
+holo_action_p1 = 0
 data = b''
 data_cp = b''
 frame_size_cp = None
@@ -147,7 +148,7 @@ class TServer(threading.Thread):
         global gamepoint_p0
         global gamepoint_p1
         global p0_win_lose
-        global test_action_p1
+        global holo_action_p1
         global data
         global frame_size_cp
         global data_cp
@@ -178,7 +179,8 @@ class TServer(threading.Thread):
         global gamepoint_p1
         global p0_win_lose
         global p1_win_lose
-        global test_action_p1
+        global holo_action_p0
+        global holo_action_p1
         global data
         global frame_size_cp
         global data_cp
@@ -188,6 +190,7 @@ class TServer(threading.Thread):
 
         while(True):
 
+            no_human = 0   # no human flag
             data = b''
             try:
                 temp_data = self.socket.recv(4096)
@@ -229,9 +232,10 @@ class TServer(threading.Thread):
             cv2.imshow(window_name + player, img)
 
 
-            if key_points[1][0] == 0 or key_points[1][1] == 0:
+            if key_points[1][0] == 0 or key_points[1][1] == 0:    # no human
                 x1 = 224 - 126
                 x2 = 224 + 126
+                no_human = 1
             elif key_points[1][0]-126 < 0:
                 x1 = 0
                 x2 = 252
@@ -255,7 +259,18 @@ class TServer(threading.Thread):
                 rst = trans(images)
                 rst = torch.unsqueeze(rst, 0)
                 self.action = validate(model, rst)
-                test_action_p1 = self.action
+
+                if no_human == 1:      # no human
+                    if player == 'P0':
+                        holo_action_p1 = 1
+                    elif player == 'P1':
+                        holo_action_p0 = 1
+                else:
+                    if player == 'P0':
+                        holo_action_p1 = self.action
+                    elif player == 'P1':
+                        holo_action_p0 = self.action
+                        
                 del images[0]
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
@@ -341,14 +356,14 @@ class GameSystem(threading.Thread):
         global gamepoint_p0
         global gamepoint_p1
         global p0_win_lose
-        global test_action_p1
+        global holo_action_p1
 
         while(True):
             f = 0
-            if test_action_p1 == 3:
+            if holo_action_p1 == 3:
                 for i in range(5):
                     time.sleep(0.1)
-                    if test_action_p1 != 3:
+                    if holo_action_p1 != 3:
                         f = 1
                         break
                 if f == 0:     # 代表連續0.5秒，都是這個動作，判定對方確實是在做這個動作
