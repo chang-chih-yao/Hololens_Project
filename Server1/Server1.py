@@ -20,6 +20,8 @@ import torch.backends.cudnn as cudnn
 from tsn_pytorch.models import TSN
 from tsn_pytorch.transforms import *
 
+import tkinter
+
 ################################### OpenPose ###########################################
 gpu_options = tf.GPUOptions(allow_growth=True)
 #e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
@@ -67,7 +69,8 @@ sock.bind((HOST, PORT))
 sock.listen(4)
 print('Wait for connection...')
 
-global_action_p0 = 0
+
+global_action_p0 = 0  # outside camera action
 global_action_p1 = 0
 gamepoint_p0 = 10
 gamepoint_p1 = 10
@@ -75,6 +78,9 @@ p0_win_lose = 0       # 1->win, 2->lose
 p1_win_lose = 0       # 1->win, 2->lose
 holo_action_p0 = 0
 holo_action_p1 = 0
+defense_skill_2_p0 = 0  # p0 針對 Skill2 有沒有防禦成功
+defense_skill_2_p1 = 0
+
 data = b''
 data_cp = b''
 frame_size_cp = None
@@ -138,18 +144,21 @@ class TServer(threading.Thread):
 
     def openpose_coordinate_to_str(self, key_points):
         my_str = ''
-        for i in range(len(key_points)):
+        for i in range(len(key_points)):  # 18個點，36個值(x,y)
             my_str = my_str + str(key_points[i][0]) + ',' + str(key_points[i][1]) + ','
         return my_str
 
-    def run_demo(self, window_name):
-        global global_action_p0
-        global global_action_p1
+    def run_holo_reset(self):
+        global p0_win_lose
+        global p1_win_lose
         global gamepoint_p0
         global gamepoint_p1
-        global p0_win_lose
-        global holo_action_p1
-        global data
+        p0_win_lose = 0
+        p1_win_lose = 0
+        gamepoint_p0 = 10
+        gamepoint_p1 = 10
+
+    def run_demo(self, window_name):
         global frame_size_cp
         global data_cp
         global co_str_cp
@@ -181,7 +190,9 @@ class TServer(threading.Thread):
         global p1_win_lose
         global holo_action_p0
         global holo_action_p1
-        global data
+        global defense_skill_2_p0
+        global defense_skill_2_p1
+
         global frame_size_cp
         global data_cp
         global co_str_cp
@@ -196,7 +207,7 @@ class TServer(threading.Thread):
                 temp_data = self.socket.recv(4096)
                 frame_size = temp_data[:4]
                 frame_size_int = int.from_bytes(frame_size, byteorder='big')
-                #print(frame_size_int)
+                #print(player + ' ' + str(frame_size_int))
                 temp_data = temp_data[4:]
 
                 data += temp_data
@@ -205,12 +216,11 @@ class TServer(threading.Thread):
                         break
                     temp_data = self.socket.recv(4096)
                     data += temp_data
-            except ConnectionResetError as ee:
-                #print('hololens close')
-                p0_win_lose = 0
-                p1_win_lose = 0
-                gamepoint_p0 = 10
-                gamepoint_p1 = 10
+            except ConnectionResetError:    # 當 hololens 關閉時
+                self.run_holo_reset()
+                break
+            except ConnectionAbortedError:  # 當 hololens 關閉時
+                self.run_holo_reset()
                 break
 
             frame = np.fromstring(data, dtype=np.uint8)
@@ -262,9 +272,9 @@ class TServer(threading.Thread):
 
                 if no_human == 1:      # no human
                     if player == 'P0':
-                        holo_action_p1 = 1
+                        holo_action_p1 = global_action_p1
                     elif player == 'P1':
-                        holo_action_p0 = 1
+                        holo_action_p0 = global_action_p0
                 else:
                     if player == 'P0':
                         holo_action_p1 = self.action
@@ -277,31 +287,30 @@ class TServer(threading.Thread):
                 
             #self.lock.release()
 
-            co_str = co_str + str(self.count) + ',' + str(self.action) + ',' + str(global_action_p0) + ',' + str(global_action_p1)
-            co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose)
+            co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
+            co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
+            co_str = co_str + ',' + str(defense_skill_2_p0) + ',' + str(defense_skill_2_p1)
             co_str = bytes(co_str, 'ascii')
             #print(co_str)
             #print(str(global_action))
 
             ####################### for unity_demo data #####################
-            frame_size_cp = frame_size
-            data_cp = data
-            co_str_cp = co_str
+            if player == 'P0':
+                frame_size_cp = frame_size
+                data_cp = data
+                co_str_cp = co_str
             
             try:
                 self.socket.send(co_str)
-            except ConnectionResetError as ee:
-                #print('hololens close')
-                p0_win_lose = 0
-                p1_win_lose = 0
-                gamepoint_p0 = 10
-                gamepoint_p1 = 10
+            except ConnectionResetError:    # 當 hololens 關閉時
+                self.run_holo_reset()
                 break
+            except ConnectionAbortedError:  # 當 hololens 關閉時
+                self.run_holo_reset()
+                break
+
             self.fps_time = time.time()
             self.count += 1
-
-            if p0_win_lose == 2:     # p0 lose
-                break
 
             if cv2.waitKey(1) == 27:
                 break
@@ -351,30 +360,71 @@ class GameSystem(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        global global_action_p0
-        global global_action_p1
         global gamepoint_p0
         global gamepoint_p1
         global p0_win_lose
+        global p1_win_lose
+        global holo_action_p0
         global holo_action_p1
+        global defense_skill_2_p0
+        global defense_skill_2_p1
+
+        skill_2_damage = 5
+        action2_start_p0 = 0
+        action2_start_p1 = 0
+
+        skill_wait_time = 2      # 對方施放每一招，都會有一個等待時間(硬直2秒)
+        restart_wait_time = 5    # GameSystem 重啟等待時間
 
         while(True):
-            f = 0
-            if holo_action_p1 == 3:
-                for i in range(5):
+            ############################# p0 看 p1 #############################
+            if holo_action_p1 == 2:
+                action2_start_p1 = 1
+            elif holo_action_p1 == 3 and action2_start_p1 == 1:
+                f = 0
+                for i in range(3):
                     time.sleep(0.1)
                     if holo_action_p1 != 3:
                         f = 1
                         break
-                if f == 0:     # 代表連續0.5秒，都是這個動作，判定對方確實是在做這個動作
-                    gamepoint_p0 -= 2
-                    time.sleep(2)  # 對方施放每一招，都會有一個等待時間(硬直2秒)
+                if f == 0:                      # 代表連續0.6秒(0.1*6)，都是這個動作，判定對方確實是在做這個動作
+                    if holo_action_p0 != 7:     # 如果另一方 沒有 做防禦動作
+                        gamepoint_p0 -= skill_2_damage
+                    else:                       # 如果另一方 有 做防禦動作
+                        defense_skill_2_p0 = 1  # 成功防禦
+                    if gamepoint_p0 != 0:
+                        time.sleep(skill_wait_time)
+                        defense_skill_2_p0 = 0  # init
+            else:
+                action2_start_p1 = 0
+
+            ############################# p1 看 p0 #############################
+            if holo_action_p0 == 2:
+                action2_start_p0 = 1
+            elif holo_action_p0 == 3 and action2_start_p0 == 1:
+                f = 0
+                for i in range(6):
+                    time.sleep(0.1)
+                    if holo_action_p0 != 3:
+                        f = 1
+                        break
+                if f == 0:                      # 代表連續0.6秒(0.1*6)，都是這個動作，判定對方確實是在做這個動作
+                    if holo_action_p1 != 7:     # 如果另一方沒有做防禦動作
+                        gamepoint_p1 -= skill_2_damage
+                    else:                       # 如果另一方 有 做防禦動作
+                        defense_skill_2_p1 = 1
+                    if gamepoint_p1 != 0:
+                        time.sleep(skill_wait_time)
+                        defense_skill_2_p1 = 0  # init
+            else:
+                action2_start_p0 = 0
             
+            ############################# 遊戲結束，結算，reset #############################
             if gamepoint_p0 == 0:
                 print('p0 lose, p1 win')
                 p0_win_lose = 2    # p0 lose
                 p1_win_lose = 1    # p1 win
-                time.sleep(3)
+                time.sleep(restart_wait_time)
                 print('---------- Game system ready ----------')
                 p0_win_lose = 0    # init
                 p1_win_lose = 0    # init
@@ -384,27 +434,14 @@ class GameSystem(threading.Thread):
                 print('p0 win, p1 lose')
                 p0_win_lose = 1    # p0 lose
                 p1_win_lose = 2    # p1 win
-                time.sleep(3)
+                time.sleep(restart_wait_time)
                 print('---------- Game system ready ----------')
                 p0_win_lose = 0    # init
                 p1_win_lose = 0    # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
             time.sleep(0.05)
-        '''
-        while(True):
-            print(str(global_action_p0) + ' | ' + str(global_action_p1))
-            time.sleep(1)
-        '''
-
-class my_NN(threading.Thread):
-    def __init__(self, count, action):
-        threading.Thread.__init__(self)
-        self.count = count
-        self.action = action
-
-    def run(self):
-        global dec_img
+        
 
 if __name__ == '__main__':
     lock = threading.Lock()

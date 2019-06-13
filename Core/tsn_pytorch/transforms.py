@@ -87,7 +87,8 @@ class GroupScale(object):
     """
 
     def __init__(self, size, interpolation=Image.BILINEAR):
-        self.worker = torchvision.transforms.Scale(size, interpolation)
+        #self.worker = torchvision.transforms.Scale(size, interpolation)
+        self.worker = torchvision.transforms.Resize(size, interpolation=interpolation)
 
     def __call__(self, img_group):
         return [self.worker(img) for img in img_group]
@@ -265,6 +266,8 @@ class Stack(object):
             if self.roll:
                 return np.concatenate([np.array(x)[:, :, ::-1] for x in img_group], axis=2)
             else:
+                #print(img_group[0].size)          # img_group 是 PIL Image data type
+                #print(img_group)
                 return np.concatenate(img_group, axis=2)
 
 
@@ -277,7 +280,9 @@ class ToTorchFormatTensor(object):
     def __call__(self, pic):
         if isinstance(pic, np.ndarray):
             # handle numpy array
-            img = torch.from_numpy(pic).permute(2, 0, 1).contiguous()             # permute(2,0,1) 把第2維搬到第0維
+            #print('it is ndarray')
+            #print(pic.shape)
+            img = torch.from_numpy(pic).permute(2, 0, 1).contiguous()          # permute(2,0,1) 把第2維搬到第0維, contiguous() 複製一份tensor
         else:
             # handle PIL Image
             img = torch.ByteTensor(torch.ByteStorage.from_buffer(pic.tobytes()))
@@ -285,7 +290,8 @@ class ToTorchFormatTensor(object):
             # put it from HWC to CHW format
             # yikes, this transpose takes 80% of the loading time/CPU
             img = img.transpose(0, 1).transpose(0, 2).contiguous()
-        return img.float().div(255) if self.div else img.float()
+
+        return img.float().div(255) if self.div else img.float()               # 把 int 轉成 float ，每個elelment再除以255
 
 
 class IdentityTransform(object):
@@ -297,13 +303,15 @@ class IdentityTransform(object):
 if __name__ == "__main__":
     trans = torchvision.transforms.Compose([
         #GroupMultiScaleCrop(256, [1, .9, .8, .7]),
-        GroupRandomHorizontalFlip(),
+        #GroupRandomHorizontalFlip(),
+        GroupScale(256),
         Stack(roll=False),
         ToTorchFormatTensor(div=True)
         ]
     )
 
-    img_cv = cv2.imread('D:\\Dataset\\Action\\my_dataset\\crop\\1\\1_0001\\img_00001.jpg')
+    #img_cv = cv2.imread('D:\\Dataset\\Action\\my_dataset\\crop\\1\\1_0001\\img_00001.jpg')
+    img_cv = cv2.imread('D:\\Code\\Action_Recognition\\tsn_pytorch\\tf_model_zoo\\lena_origin.png')
     im = Image.fromarray(cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB))
 
     color_group = [im] * 2
@@ -318,14 +326,19 @@ if __name__ == "__main__":
     #Image.fromarray(rst[:, :, :3]).show()
     #Image.fromarray(rst[:, :, 3:]).show()
 
+
     rst_np = rst.permute(1, 2, 0).numpy()*255
     rst_np = rst_np.astype(np.uint8)
     print(rst_np)
     print(rst_np.shape, rst_np.dtype)
-    # BGR_1 = cv2.cvtColor(rst_np[:, :, :3], cv2.COLOR_RGB2BGR)
-    # cv2.imshow('dataset', BGR_1)
-    # cv2.waitKey(0)
-    Image.fromarray(rst_np[:, :, :3]).show()
+
+
+    BGR_1 = cv2.cvtColor(rst_np[:, :, :3], cv2.COLOR_RGB2BGR)
+    BGR_2 = cv2.cvtColor(rst_np[:, :, 3:], cv2.COLOR_RGB2BGR)
+    cv2.imshow('1', BGR_1)
+    cv2.imshow('2', BGR_2)
+    cv2.waitKey(0)
+    # Image.fromarray(rst_np[:, :, :3]).show()
     # Image.fromarray(rst_np[:, :, 3:]).show()
 
     #Image.fromarray(rst[0].numpy()).show()

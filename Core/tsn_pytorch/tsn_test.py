@@ -233,15 +233,17 @@ def validate(val_loader, model, crop_size):
 
         # print(i)
 
-        '''
+        
         if i % 5 == 0:
             print(('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Prec@1 ({top1.avg:.3f})'.format(
                    i, len(val_loader), batch_time=batch_time,
                    top1=top1)))
-        '''
         
+
+
+        '''
         print(('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Prec@1 ({top1.avg:.3f})'.format( i, len(val_loader), batch_time=batch_time, top1=top1 )))
@@ -270,7 +272,7 @@ def validate(val_loader, model, crop_size):
                 break
         elif isBreak == 1:
             break
-        
+        '''
 
 
     # print(time.time() - total)     # total time
