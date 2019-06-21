@@ -81,7 +81,8 @@ holo_action_p1 = 0
 defense_skill_2_p0 = 0  # p0 針對 Skill2 有沒有防禦成功
 defense_skill_2_p1 = 0
 
-data = b''
+status_data_p0 = b'0,0|'
+status_data_p1 = b'0,0|'
 data_cp = b''
 frame_size_cp = None
 co_str_cp = ''
@@ -192,6 +193,8 @@ class TServer(threading.Thread):
         global holo_action_p1
         global defense_skill_2_p0
         global defense_skill_2_p1
+        global status_data_p0
+        global status_data_p1
 
         global frame_size_cp
         global data_cp
@@ -212,7 +215,7 @@ class TServer(threading.Thread):
 
                 data += temp_data
                 while(True):
-                    if len(data) == frame_size_int:
+                    if len(data) == frame_size_int + 256:
                         break
                     temp_data = self.socket.recv(4096)
                     data += temp_data
@@ -223,7 +226,17 @@ class TServer(threading.Thread):
                 self.run_holo_reset()
                 break
 
-            frame = np.fromstring(data, dtype=np.uint8)
+            img_data = data[0:frame_size_int]
+            if player == 'P0':
+                status_data_p0 = data[frame_size_int:]
+            elif player == 'P1':
+                status_data_p1 = data[frame_size_int:]
+            # if status_data_p0[0] == b'1'[0] or status_data_p0[2] == b'1'[0] or status_data_p0[4] == b'1'[0]:
+            #     print(status_data_p0.split(b'|')[0])
+            # else:
+            #     print('------------------')
+
+            frame = np.fromstring(img_data, dtype=np.uint8)
             dec_img = cv2.imdecode(frame, 1)
         
             crop_img = dec_img.copy()
@@ -287,6 +300,12 @@ class TServer(threading.Thread):
                 
             #self.lock.release()
 
+            if player == 'P0':
+                if status_data_p0[2] == b'1'[0]:     # HoloLens那端已經進入end game畫面
+                    holo_action_p1 = 1
+            elif player == 'P1':
+                if status_data_p1[2] == b'1'[0]:
+                    holo_action_p0 = 1
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
             co_str = co_str + ',' + str(defense_skill_2_p0) + ',' + str(defense_skill_2_p1)
@@ -294,10 +313,10 @@ class TServer(threading.Thread):
             #print(co_str)
             #print(str(global_action))
 
-            ####################### for unity_demo data #####################
+            ####################### for unity_demo img_data #####################
             if player == 'P0':
                 frame_size_cp = frame_size
-                data_cp = data
+                data_cp = img_data
                 co_str_cp = co_str
             
             try:
@@ -369,15 +388,24 @@ class GameSystem(threading.Thread):
         global defense_skill_2_p0
         global defense_skill_2_p1
 
-        skill_2_damage = 5
-        action2_start_p0 = 0
-        action2_start_p1 = 0
+        skill_2_damage = 2
+        #action2_start_p0 = 0
+        #action2_start_p1 = 0
 
         skill_wait_time = 2      # 對方施放每一招，都會有一個等待時間(硬直2秒)
         restart_wait_time = 5    # GameSystem 重啟等待時間
 
         while(True):
             ############################# p0 看 p1 #############################
+            if status_data_p0[0] == b'1'[0]:  # 如果p0被技能(Skill_2)打到
+                if holo_action_p0 != 7:       # 如果另一方 沒有 做防禦動作
+                    gamepoint_p0 -= skill_2_damage
+                else:                         # 如果另一方 有 做防禦動作
+                    defense_skill_2_p0 = 1    # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
+                if gamepoint_p0 != 0:
+                    time.sleep(skill_wait_time)
+                    defense_skill_2_p0 = 0    # init
+            '''
             if holo_action_p1 == 2:
                 action2_start_p1 = 1
             elif holo_action_p1 == 3 and action2_start_p1 == 1:
@@ -397,8 +425,19 @@ class GameSystem(threading.Thread):
                         defense_skill_2_p0 = 0  # init
             else:
                 action2_start_p1 = 0
+            '''
 
             ############################# p1 看 p0 #############################
+            if status_data_p1[0] == b'1'[0]:  # 如果p1被技能(Skill_2)打到
+                if holo_action_p1 != 7:       # 如果另一方沒有做防禦動作
+                    gamepoint_p1 -= skill_2_damage
+                else:                         # 如果另一方 有 做防禦動作
+                    defense_skill_2_p1 = 1
+                if gamepoint_p1 != 0:
+                    time.sleep(skill_wait_time)
+                    defense_skill_2_p1 = 0    # init
+
+            '''
             if holo_action_p0 == 2:
                 action2_start_p0 = 1
             elif holo_action_p0 == 3 and action2_start_p0 == 1:
@@ -418,29 +457,32 @@ class GameSystem(threading.Thread):
                         defense_skill_2_p1 = 0  # init
             else:
                 action2_start_p0 = 0
+            '''
             
             ############################# 遊戲結束，結算，reset #############################
             if gamepoint_p0 == 0:
                 print('p0 lose, p1 win')
                 p0_win_lose = 2    # p0 lose
                 p1_win_lose = 1    # p1 win
-                time.sleep(restart_wait_time)
-                print('---------- Game system ready ----------')
+                time.sleep(1)
                 p0_win_lose = 0    # init
                 p1_win_lose = 0    # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
+                print('---------- Game system ready ----------')
+                
             elif gamepoint_p1 == 0:
                 print('p0 win, p1 lose')
                 p0_win_lose = 1    # p0 lose
                 p1_win_lose = 2    # p1 win
-                time.sleep(restart_wait_time)
-                print('---------- Game system ready ----------')
+                time.sleep(1)
                 p0_win_lose = 0    # init
                 p1_win_lose = 0    # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
-            time.sleep(0.05)
+                print('---------- Game system ready ----------')
+                
+            time.sleep(0.02)
         
 
 if __name__ == '__main__':

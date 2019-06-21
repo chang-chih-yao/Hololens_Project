@@ -50,8 +50,8 @@ class TServer(threading.Thread):
 
     def run_holo(self, window_name, player):
         while(True):
-            data = self.socket.recv(1024)
-            print(data)
+            data = self.socket.recv(10)
+            print(data, str(len(data)))
             if data == b'bye':
                 break
             status = 'you are ' + player
