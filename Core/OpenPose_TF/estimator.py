@@ -420,6 +420,11 @@ class TfPoseEstimator:
     def draw_one_human(npimg, humans, imgcopy=False, score=0.8):
         if imgcopy:
             npimg = np.copy(npimg)
+        
+        arr = []
+        for i in range(common.CocoPart.Background.value):
+            arr.append([0,0])
+        
         image_h, image_w = npimg.shape[:2]
         centers = {}
         for human in humans:
@@ -431,6 +436,8 @@ class TfPoseEstimator:
                     continue
 
                 body_part = human.body_parts[i]
+                arr[i][0] = int(body_part.x * image_w + 0.5)
+                arr[i][1] = int(body_part.y * image_h + 0.5)
                 center = (int(body_part.x * image_w + 0.5), int(body_part.y * image_h + 0.5))
                 centers[i] = center
                 cv2.circle(npimg, center, 3, common.CocoColors[i], thickness=3, lineType=8, shift=0)
@@ -445,7 +452,7 @@ class TfPoseEstimator:
 
             break
 
-        return npimg
+        return npimg, arr
 
     @staticmethod
     def get_keypoints(npimg, humans):

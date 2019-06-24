@@ -58,7 +58,6 @@ trans = trans = torchvision.transforms.Compose([
 )
 
 
-
 ################################### Socket #######################################
 HOST = '192.168.11.107'
 PORT = 9000
@@ -80,12 +79,16 @@ holo_action_p0 = 0
 holo_action_p1 = 0
 defense_skill_2_p0 = 0  # p0 針對 Skill2 有沒有防禦成功
 defense_skill_2_p1 = 0
+blood_effect_p0 = 0
+blood_effect_p1 = 0
 
 status_data_p0 = b'0,0|'
 status_data_p1 = b'0,0|'
 data_cp = b''
 frame_size_cp = None
 co_str_cp = ''
+
+
 
 
 def validate(model, rst):
@@ -115,6 +118,34 @@ class TServer(threading.Thread):
         self.action = action
         self.fps_time = fps_time
         self.lock = lock
+
+        ##################### Kalman filter ##################
+        '''
+        它有3个输入参数
+        dynam_params  ：状态空间的维数，这里为4
+        measure_param ：测量值的维数，这里也为2
+        control_params：控制向量的维数，默认为0。由于这里该模型中并没有控制变量，因此也为0。
+        kalman.processNoiseCov    ：为模型系统的噪声，噪声越大，预测结果越不稳定，越容易接近模型系统预测值，且单步变化越大，相反，若噪声小，则预测结果与上个计算结果相差不大。
+        kalman.measurementNoiseCov：为测量系统的协方差矩阵，方差越小，预测结果越接近测量值
+        '''
+        self.kalman_RElbow = cv2.KalmanFilter(4,2)
+        self.kalman_RElbow.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_RElbow.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_RElbow.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * 1e-4
+        self.kalman_RElbow.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.04
+        self.kalman_RElbow.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_RWrist = cv2.KalmanFilter(4,2)
+        self.kalman_RWrist.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_RWrist.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_RWrist.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * 1e-4
+        self.kalman_RWrist.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.04
+        self.kalman_RWrist.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.ori_RElbow = np.array([[0],[0]],np.float32)
+        self.pre_RElbow = np.array([[0],[0]],np.float32)
+        self.ori_RWrist = np.array([[0],[0]],np.float32)
+        self.pre_RWrist = np.array([[0],[0]],np.float32)
         
 
     def run(self):
@@ -183,18 +214,13 @@ class TServer(threading.Thread):
 
     def run_holo(self, window_name, player):
 
-        global global_action_p0
-        global global_action_p1
-        global gamepoint_p0
-        global gamepoint_p1
-        global p0_win_lose
-        global p1_win_lose
-        global holo_action_p0
-        global holo_action_p1
-        global defense_skill_2_p0
-        global defense_skill_2_p1
-        global status_data_p0
-        global status_data_p1
+        global global_action_p0, global_action_p1
+        global gamepoint_p0, gamepoint_p1
+        global p0_win_lose, p1_win_lose
+        global holo_action_p0, holo_action_p1
+        global defense_skill_2_p0, defense_skill_2_p1
+        global status_data_p0, status_data_p1
+        global blood_effect_p0, blood_effect_p1
 
         global frame_size_cp
         global data_cp
@@ -245,8 +271,23 @@ class TServer(threading.Thread):
 
             #self.lock.acquire()
             humans = e.inference(dec_img, resize_to_default=True, upsample_size=4.0)
-            key_points = TfPoseEstimator.get_keypoints(dec_img, humans)
-            img = TfPoseEstimator.draw_one_human(dec_img, humans, imgcopy=False, score=0.8)
+            img, key_points = TfPoseEstimator.draw_one_human(dec_img, humans, imgcopy=False, score=0.8)
+
+            ###### Kalman filter ######
+            if(key_points[3][0] != 0 or key_points[3][1] != 0):
+                self.ori_RElbow = np.array([[key_points[3][0]],[key_points[3][1]]], np.float32)
+                self.kalman_RElbow.correct(self.ori_RElbow)
+                self.pre_RElbow = self.kalman_RElbow.predict()
+            
+            if(key_points[4][0] != 0 or key_points[4][1] != 0):
+                self.ori_RWrist = np.array([[key_points[4][0]],[key_points[4][1]]], np.float32)
+                self.kalman_RWrist.correct(self.ori_RWrist)
+                self.pre_RWrist = self.kalman_RWrist.predict()
+
+            key_points[3][0] = self.pre_RElbow[0,0]
+            key_points[3][1] = self.pre_RElbow[1,0]
+            key_points[4][0] = self.pre_RWrist[0,0]
+            key_points[4][1] = self.pre_RWrist[1,0]
 
             co_str = self.openpose_coordinate_to_str(key_points)
 
@@ -308,9 +349,9 @@ class TServer(threading.Thread):
                     holo_action_p0 = 1
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
-            co_str = co_str + ',' + str(defense_skill_2_p0) + ',' + str(defense_skill_2_p1)
-            co_str = bytes(co_str, 'ascii')
+            co_str = co_str + ',' + str(defense_skill_2_p0) + ',' + str(defense_skill_2_p1) + ',' + str(blood_effect_p0) + ',' + str(blood_effect_p1)
             #print(co_str)
+            co_str = bytes(co_str, 'ascii')
             #print(str(global_action))
 
             ####################### for unity_demo img_data #####################
@@ -379,32 +420,33 @@ class GameSystem(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        global gamepoint_p0
-        global gamepoint_p1
-        global p0_win_lose
-        global p1_win_lose
-        global holo_action_p0
-        global holo_action_p1
-        global defense_skill_2_p0
-        global defense_skill_2_p1
+        global gamepoint_p0, gamepoint_p1
+        global p0_win_lose, p1_win_lose
+        global holo_action_p0, holo_action_p1
+        global defense_skill_2_p0, defense_skill_2_p1
+        global blood_effect_p0, blood_effect_p1
 
         skill_2_damage = 2
         #action2_start_p0 = 0
         #action2_start_p1 = 0
 
-        skill_wait_time = 2      # 對方施放每一招，都會有一個等待時間(硬直2秒)
+        skill_wait_time = 1      # 對方施放每一招，都會有一個等待時間(硬直2秒)
         restart_wait_time = 5    # GameSystem 重啟等待時間
 
         while(True):
             ############################# p0 看 p1 #############################
             if status_data_p0[0] == b'1'[0]:  # 如果p0被技能(Skill_2)打到
                 if holo_action_p0 != 7:       # 如果另一方 沒有 做防禦動作
-                    gamepoint_p0 -= skill_2_damage
+                    blood_effect_p0 = 1
+                    gamepoint_p0 -= skill_2_damage  # 扣血
                 else:                         # 如果另一方 有 做防禦動作
                     defense_skill_2_p0 = 1    # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
+                
                 if gamepoint_p0 != 0:
-                    time.sleep(skill_wait_time)
+                    time.sleep(0.5)
+                    blood_effect_p0 = 0       # init
                     defense_skill_2_p0 = 0    # init
+                    time.sleep(skill_wait_time)
             '''
             if holo_action_p1 == 2:
                 action2_start_p1 = 1
@@ -430,11 +472,14 @@ class GameSystem(threading.Thread):
             ############################# p1 看 p0 #############################
             if status_data_p1[0] == b'1'[0]:  # 如果p1被技能(Skill_2)打到
                 if holo_action_p1 != 7:       # 如果另一方沒有做防禦動作
+                    blood_effect_p1 = 1
                     gamepoint_p1 -= skill_2_damage
                 else:                         # 如果另一方 有 做防禦動作
                     defense_skill_2_p1 = 1
+                
                 if gamepoint_p1 != 0:
                     time.sleep(skill_wait_time)
+                    blood_effect_p1 = 0      # init
                     defense_skill_2_p1 = 0    # init
 
             '''
@@ -462,22 +507,24 @@ class GameSystem(threading.Thread):
             ############################# 遊戲結束，結算，reset #############################
             if gamepoint_p0 == 0:
                 print('p0 lose, p1 win')
-                p0_win_lose = 2    # p0 lose
-                p1_win_lose = 1    # p1 win
+                p0_win_lose = 2     # p0 lose
+                p1_win_lose = 1     # p1 win
                 time.sleep(1)
-                p0_win_lose = 0    # init
-                p1_win_lose = 0    # init
+                blood_effect_p0 = 0 # init
+                p0_win_lose = 0     # init
+                p1_win_lose = 0     # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
                 print('---------- Game system ready ----------')
                 
             elif gamepoint_p1 == 0:
                 print('p0 win, p1 lose')
-                p0_win_lose = 1    # p0 lose
-                p1_win_lose = 2    # p1 win
+                p0_win_lose = 1     # p0 lose
+                p1_win_lose = 2     # p1 win
                 time.sleep(1)
-                p0_win_lose = 0    # init
-                p1_win_lose = 0    # init
+                blood_effect_p1 = 0 # init
+                p0_win_lose = 0     # init
+                p1_win_lose = 0     # init
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
                 print('---------- Game system ready ----------')
