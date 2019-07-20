@@ -54,7 +54,7 @@ while(True):
             
             start_cou += 1
             end_cou += 1
-        else:
+        else:   # 沒有結束動作
             if not os.path.exists(action_label + '_start/' + '{:04d}'.format(start_cou)):
                 os.mkdir(action_label + '_start/' + '{:04d}/'.format(start_cou))
 

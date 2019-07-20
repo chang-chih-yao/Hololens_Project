@@ -28,12 +28,11 @@ def MOD_3():
     f_train.close()
     f_test.close()
 
-def for_7_class():
+def for_7_class(MOD_NUM=3):
     f_train = open('my_train.txt', 'w')
     f_test = open('my_test.txt', 'w')
 
     file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
-    #file_arr = ['crop/1', 'crop/2']
     label_arr = [' 1\n', ' 2\n', ' 3\n', ' 4\n', ' 5\n', ' 6\n', ' 7\n']
 
     for arr in range(len(file_arr)):
@@ -42,7 +41,7 @@ def for_7_class():
             #print(dirPath, dirNames)
             s = 'D:\\Code\Hololens_Project\\Dataset\\my_dataset_holo\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
             if len(fileNames) != 0:
-                if cou % 3 == 0:
+                if cou % MOD_NUM == 0:
                     f_test.write(s)
                     cou += 1
                 else:
@@ -55,5 +54,5 @@ def for_7_class():
 
 if __name__ == "__main__":
     #MOD_3()
-    for_7_class()
+    for_7_class(MOD_NUM=4)
     

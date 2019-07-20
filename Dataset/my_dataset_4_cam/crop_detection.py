@@ -7,19 +7,18 @@ from object_detection.utils import label_map_util
 from shutil import copyfile
 
 import time
-'''
-python detection.py --video_root D:/Code/AF_tracking/videos/ --save_root D:/Code/AF_tracking/dataset/detections/new_delete_other/ --cam_num 4
-'''
 
-start_time = [1, 1, 1, 1]
-start_sequence = 0
-end_sequence = 810
 #file_arr = ['D:/Dataset/Action/my_dataset_4_cam/1', 'D:/Dataset/Action/my_dataset_4_cam/2', 'D:/Dataset/Action/my_dataset_4_cam/3', 'D:/Dataset/Action/my_dataset_4_cam/4', 'D:/Dataset/Action/my_dataset_4_cam/5', 'D:/Dataset/Action/my_dataset_4_cam/6']
-file_arr = ['D:/Dataset/Action/my_dataset_4_cam/2', 'D:/Dataset/Action/my_dataset_4_cam/3', 'D:/Dataset/Action/my_dataset_4_cam/4', 'D:/Dataset/Action/my_dataset_4_cam/5', 'D:/Dataset/Action/my_dataset_4_cam/6']
+file_arr = ['D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/1', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/2', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/3', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/4', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/5', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/6']
 
+old_file_num = [208, 285, 320, 309, 280, 316]              # [ 舊的 label_1 資料夾的個數, 舊的 label_2 資料夾的個數, ... ] 這樣他就會跳過舊的，只crop新的片段
 
-
-def object_detection(detection_graph, video_root, category_index):
+def object_detection(detection_graph, category_index):
     with detection_graph.as_default():
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -38,10 +37,13 @@ def object_detection(detection_graph, video_root, category_index):
                         img_dir = img_path.split('img_')[0].replace('my_dataset_4_cam', 'my_dataset_4_cam/crop') # 'D:/Dataset/Action/my_dataset_4_cam/crop/1/0/0001/'
                         img_name = img_dir + img_path.split('/')[-1]                                             # 'D:/Dataset/Action/my_dataset_4_cam/crop/1/0/0001/img_00001.jpg'
                         
+                        if int(img_dir.split('/')[-2]) <= old_file_num[arr]:
+                            break
+
                         if not os.path.exists(img_dir):
                             os.mkdir(img_dir)
                         if not os.path.exists(img_path):
-                            print('end')
+                            print('path error!')
                             exit()
                             
                         frame_0 = cv2.imread(img_path)
@@ -115,9 +117,10 @@ def object_detection(detection_graph, video_root, category_index):
                         if human == 1:
                             human = 0
                             cv2.imwrite(img_name, crop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+                            #print(img_name)
                             cv2.imshow('crop', crop_img)
                             cv2.putText(frame_0, "FPS: %.2f" % (1.0 / (time.time() - fps)), (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                            cv2.putText(frame_0, img_path, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                            cv2.putText(frame_0, img_path, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
                             cv2.imshow("origin", frame_0)
                             if cv2.waitKey(1) == 27:
                                 exit()
@@ -146,7 +149,7 @@ def object_detection(detection_graph, video_root, category_index):
 
 def main():
     # cam_num = 4
-    video_root = 'D:/code/tf-openpose_new/one_million.mp4'
+    #video_root = 'D:/code/tf-openpose_new/one_million.mp4'
     #video_root = 'D:/code/tf-openpose_new/baseball_video/baseball_1.mp4'
     # save_root = 'D:/Code/MultiCamOverlap/dataset/detections/No3/'
     # MODEL_NAME
@@ -169,12 +172,10 @@ def main():
             tf.import_graph_def(od_graph_def, name='')
 
     label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-    categories = label_map_util.convert_label_map_to_categories(
-        label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+    categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
     category_index = label_map_util.create_category_index(categories)
 
-    object_detection(detection_graph, video_root,
-                     category_index)
+    object_detection(detection_graph, category_index)
 
 
 if __name__ == '__main__':

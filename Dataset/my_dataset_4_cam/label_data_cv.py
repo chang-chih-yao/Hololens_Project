@@ -11,7 +11,7 @@ def hisEqulColor(img):
     cv2.cvtColor(ycrcb, cv2.COLOR_YCR_CB2BGR, img)
     return img
 
-root_folder = 'D:/Dataset/Action/my_dataset_4_cam/'
+root_folder = 'D:/Code/Hololens_Project/Dataset/my_dataset_4_cam/'
 
 while(True):
     print('Which person dataset : ', end='')

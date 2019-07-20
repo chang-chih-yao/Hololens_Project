@@ -1,6 +1,8 @@
 import os
 from shutil import copyfile
 
+root_path = 'D:/Code/Hololens_Project/Dataset/my_dataset_holo/'
+
 while(True):
     print('Which person dataset : ', end='')
     person = input()
@@ -29,7 +31,7 @@ while(True):
             print('type error')
             continue
 
-        folder_num = len(os.listdir('D:/Dataset/Action/my_dataset/' + action_label + '/'))
+        folder_num = len(os.listdir(root_path + action_label + '/'))
         begin_folder = folder_num + 1
         print('Begin folder         :', begin_folder)
 
@@ -50,11 +52,11 @@ while(True):
                 continue
 
             folder_name = action_label + '_{:04d}'.format(begin_folder)
-            if not os.path.exists('D:/Dataset/Action/my_dataset/' + action_label + '/' + folder_name + '/'):
-                os.mkdir('D:/Dataset/Action/my_dataset/' + action_label + '/' + folder_name + '/')
+            if not os.path.exists(root_path + action_label + '/' + folder_name + '/'):
+                os.mkdir(root_path + action_label + '/' + folder_name + '/')
                 for i in range(int(begin_img), int(end_img)+1):
-                    copyfile('D:/Dataset/Action/my_dataset/Raw_data/' + person + '/img_{:05d}.jpg'.format(i), 
-                            'D:/Dataset/Action/my_dataset/' + action_label + '/' + folder_name + '/img_{:05d}.jpg'.format(i-int(begin_img)+1))
+                    copyfile(root_path + 'Raw_data/' + person + '/img_{:05d}.jpg'.format(i), 
+                            root_path + action_label + '/' + folder_name + '/img_{:05d}.jpg'.format(i-int(begin_img)+1))
                 print(folder_name ,'has been created. Copy from', begin_img, 'to', end_img, '({:d})'.format( int(end_img)-int(begin_img) + 1 ))
             else:
                 print('Folder existed !!!!!!!!!!!!!!!!!!!!!!')

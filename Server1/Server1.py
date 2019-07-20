@@ -315,7 +315,7 @@ class TServer(threading.Thread):
 
             img_tsn = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
 
-            if self.count % 3 == 0 and len(images) == 2:
+            if self.count % 4 == 0 and len(images) == 2:
                 images.extend([img_tsn])
                 # print(images[0].size)
                 # print(images[1].size)
@@ -336,7 +336,7 @@ class TServer(threading.Thread):
                         holo_action_p0 = self.action
                         
                 del images[0]
-            elif self.count % 3 == 0:
+            elif self.count % 4 == 0:
                 images.extend([img_tsn])
                 
             #self.lock.release()
@@ -478,38 +478,17 @@ class GameSystem(threading.Thread):
                     defense_skill_2_p1 = 1
                 
                 if gamepoint_p1 != 0:
-                    time.sleep(skill_wait_time)
+                    time.sleep(0.5)
                     blood_effect_p1 = 0      # init
                     defense_skill_2_p1 = 0    # init
-
-            '''
-            if holo_action_p0 == 2:
-                action2_start_p0 = 1
-            elif holo_action_p0 == 3 and action2_start_p0 == 1:
-                f = 0
-                for i in range(6):
-                    time.sleep(0.1)
-                    if holo_action_p0 != 3:
-                        f = 1
-                        break
-                if f == 0:                      # 代表連續0.6秒(0.1*6)，都是這個動作，判定對方確實是在做這個動作
-                    if holo_action_p1 != 7:     # 如果另一方沒有做防禦動作
-                        gamepoint_p1 -= skill_2_damage
-                    else:                       # 如果另一方 有 做防禦動作
-                        defense_skill_2_p1 = 1
-                    if gamepoint_p1 != 0:
-                        time.sleep(skill_wait_time)
-                        defense_skill_2_p1 = 0  # init
-            else:
-                action2_start_p0 = 0
-            '''
+                    time.sleep(skill_wait_time)
             
             ############################# 遊戲結束，結算，reset #############################
             if gamepoint_p0 == 0:
                 print('p0 lose, p1 win')
                 p0_win_lose = 2     # p0 lose
                 p1_win_lose = 1     # p1 win
-                time.sleep(1)
+                time.sleep(0.5)
                 blood_effect_p0 = 0 # init
                 p0_win_lose = 0     # init
                 p1_win_lose = 0     # init
@@ -521,7 +500,7 @@ class GameSystem(threading.Thread):
                 print('p0 win, p1 lose')
                 p0_win_lose = 1     # p0 lose
                 p1_win_lose = 2     # p1 win
-                time.sleep(1)
+                time.sleep(0.5)
                 blood_effect_p1 = 0 # init
                 p0_win_lose = 0     # init
                 p1_win_lose = 0     # init
