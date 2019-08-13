@@ -38,8 +38,16 @@ while(True):
         index = input()
         if index == 'q':
             break
-
-        if index != '0':
+        elif index == 'r':
+            for dirPath, dirNames, fileNames in os.walk(action_label + '/' + action_label + '_{:04d}/'.format(start_cou)):
+                cou = 1
+                for f in fileNames:
+                    img_dir = os.path.join(dirPath, f)
+                    #print(img_dir)
+                    new_img_dir = img_dir.replace(f, 'img_{:05d}.jpg'.format(cou))
+                    os.rename(img_dir, new_img_dir)
+                    cou += 1
+        elif index != '0':
             if not os.path.exists(action_label + '_start/' + '{:04d}'.format(start_cou)):
                 os.mkdir(action_label + '_start/' + '{:04d}/'.format(start_cou))
             if not os.path.exists(action_label + '_end/' + '{:04d}'.format(end_cou)):

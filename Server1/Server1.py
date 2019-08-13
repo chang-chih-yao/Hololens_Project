@@ -36,7 +36,7 @@ model = TSN(num_class, 3, 'RGB',
             base_model='resnet34',
             consensus_type='avg', dropout=0.7)
 
-checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_0521_6_actions_7_class.pth')
+checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_0720_6_actions_7_class_MOD_4.pth')
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
@@ -59,13 +59,13 @@ trans = trans = torchvision.transforms.Compose([
 
 
 ################################### Socket #######################################
-HOST = '192.168.11.107'
+HOST = '192.168.208.120'
 PORT = 9000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # reuse tcp
 sock.bind((HOST, PORT))
-sock.listen(4)
+sock.listen(5)
 print('Wait for connection...')
 
 
@@ -82,11 +82,14 @@ defense_skill_2_p1 = 0
 blood_effect_p0 = 0
 blood_effect_p1 = 0
 
-status_data_p0 = b'0,0|'
-status_data_p1 = b'0,0|'
+status_data_p0 = b'0,0,0|'
+status_data_p1 = b'0,0,0|'
 data_cp = b''
 frame_size_cp = None
 co_str_cp = ''
+
+temp_global_cou_p0 = 0
+temp_global_cou_p1 = 0
 
 
 
@@ -222,6 +225,8 @@ class TServer(threading.Thread):
         global status_data_p0, status_data_p1
         global blood_effect_p0, blood_effect_p1
 
+        global temp_global_cou_p0, temp_global_cou_p1
+
         global frame_size_cp
         global data_cp
         global co_str_cp
@@ -315,7 +320,7 @@ class TServer(threading.Thread):
 
             img_tsn = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
 
-            if self.count % 4 == 0 and len(images) == 2:
+            if self.count % 3 == 0 and len(images) == 2:
                 images.extend([img_tsn])
                 # print(images[0].size)
                 # print(images[1].size)
@@ -326,8 +331,22 @@ class TServer(threading.Thread):
 
                 if no_human == 1:      # no human
                     if player == 'P0':
+                        if global_action_p1 == 2:
+                            temp_global_cou_p1 += 1
+                        else:
+                            temp_global_cou_p1 = 0
+                        if temp_global_cou_p1 > 10:
+                            global_action_p1 = 3
+                        
                         holo_action_p1 = global_action_p1
                     elif player == 'P1':
+                        if global_action_p0 == 2:
+                            temp_global_cou_p0 += 1
+                        else:
+                            temp_global_cou_p0 = 0
+                        if temp_global_cou_p0 > 10:
+                            global_action_p0 = 3
+                        
                         holo_action_p0 = global_action_p0
                 else:
                     if player == 'P0':
@@ -336,14 +355,14 @@ class TServer(threading.Thread):
                         holo_action_p0 = self.action
                         
                 del images[0]
-            elif self.count % 4 == 0:
+            elif self.count % 3 == 0:
                 images.extend([img_tsn])
                 
             #self.lock.release()
 
             if player == 'P0':
                 if status_data_p0[2] == b'1'[0]:     # HoloLens那端已經進入end game畫面
-                    holo_action_p1 = 1
+                    holo_action_p1 = 1               # 遊戲reset階段辨識到的動作一率為no action
             elif player == 'P1':
                 if status_data_p1[2] == b'1'[0]:
                     holo_action_p0 = 1
@@ -387,12 +406,14 @@ class TServer(threading.Thread):
             action_byte = self.socket.recv(1024)
             if action_byte == b'bye':
                 break
-            print(action_byte)
+            #print(action_byte)
             act_p0 = int(bytes.decode(action_byte).split(',')[0])
             act_p1 = int(bytes.decode(action_byte).split(',')[1])
 
             global_action_p0 = int((act_p0 + 2)/4) + 1
             global_action_p1 = int((act_p1 + 2)/4) + 1
+
+            print(str(global_action_p0) + ', ' + str(global_action_p1))
 
             '''
             if action_byte == b'1':
@@ -423,10 +444,11 @@ class GameSystem(threading.Thread):
         global gamepoint_p0, gamepoint_p1
         global p0_win_lose, p1_win_lose
         global holo_action_p0, holo_action_p1
+        global global_action_p0, global_action_p1
         global defense_skill_2_p0, defense_skill_2_p1
         global blood_effect_p0, blood_effect_p1
 
-        skill_2_damage = 2
+        skill_2_damage = 5
         #action2_start_p0 = 0
         #action2_start_p1 = 0
 
@@ -436,10 +458,10 @@ class GameSystem(threading.Thread):
         while(True):
             ############################# p0 看 p1 #############################
             if status_data_p0[0] == b'1'[0]:  # 如果p0被技能(Skill_2)打到
-                if holo_action_p0 != 7:       # 如果另一方 沒有 做防禦動作
+                if holo_action_p0 != 7:       # 如果p0 沒有 做防禦動作
                     blood_effect_p0 = 1
                     gamepoint_p0 -= skill_2_damage  # 扣血
-                else:                         # 如果另一方 有 做防禦動作
+                else:                         # 如果p0 有 做防禦動作
                     defense_skill_2_p0 = 1    # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
                 
                 if gamepoint_p0 != 0:
@@ -471,15 +493,15 @@ class GameSystem(threading.Thread):
 
             ############################# p1 看 p0 #############################
             if status_data_p1[0] == b'1'[0]:  # 如果p1被技能(Skill_2)打到
-                if holo_action_p1 != 7:       # 如果另一方沒有做防禦動作
+                if holo_action_p1 != 7:       # 如果p1 沒有 做防禦動作
                     blood_effect_p1 = 1
                     gamepoint_p1 -= skill_2_damage
-                else:                         # 如果另一方 有 做防禦動作
+                else:                         # 如果p1 有 做防禦動作
                     defense_skill_2_p1 = 1
                 
                 if gamepoint_p1 != 0:
                     time.sleep(0.5)
-                    blood_effect_p1 = 0      # init
+                    blood_effect_p1 = 0       # init
                     defense_skill_2_p1 = 0    # init
                     time.sleep(skill_wait_time)
             
@@ -490,11 +512,17 @@ class GameSystem(threading.Thread):
                 p1_win_lose = 1     # p1 win
                 time.sleep(0.5)
                 blood_effect_p0 = 0 # init
-                p0_win_lose = 0     # init
-                p1_win_lose = 0     # init
+                # ------------ reset data ------------ #
+                p0_win_lose = 0
+                p1_win_lose = 0
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
+                holo_action_p0 = 1
+                holo_action_p1 = 1
+                global_action_p0 = 1
+                global_action_p1 = 1
                 print('---------- Game system ready ----------')
+                time.sleep(1)
                 
             elif gamepoint_p1 == 0:
                 print('p0 win, p1 lose')
@@ -502,13 +530,19 @@ class GameSystem(threading.Thread):
                 p1_win_lose = 2     # p1 win
                 time.sleep(0.5)
                 blood_effect_p1 = 0 # init
-                p0_win_lose = 0     # init
-                p1_win_lose = 0     # init
+                # ------------ reset data ------------ #
+                p0_win_lose = 0
+                p1_win_lose = 0
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
+                holo_action_p0 = 1
+                holo_action_p1 = 1
+                global_action_p0 = 1
+                global_action_p1 = 1
                 print('---------- Game system ready ----------')
+                time.sleep(1)
                 
-            time.sleep(0.02)
+            time.sleep(0.03)
         
 
 if __name__ == '__main__':

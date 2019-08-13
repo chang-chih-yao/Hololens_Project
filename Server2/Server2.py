@@ -93,7 +93,7 @@ def object_detection(detection_graph, video_root, category_index, features_np):
     ############################## Action Recognition ######################################
     model = TSN(num_class, 3, 'RGB', base_model='resnet34', consensus_type='avg', dropout=0.7)
 
-    checkpoint = torch.load('C:\\Users\\ray20\\Desktop\\Michael\\Code\\Action_Recognition\\tsn_pytorch\\pth\\4cam_2019_0425_6_actions.pth')
+    checkpoint = torch.load('C:\\Users\\ray20\\Desktop\\Michael\\Code\\Action_Recognition\\tsn_pytorch\\pth\\4cam_2019_0722_6_actions_21_class_NO_BG_MOD_4.pth')
     print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
     base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}

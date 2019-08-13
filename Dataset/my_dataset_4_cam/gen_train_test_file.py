@@ -12,7 +12,7 @@ person_index_5 = [[1,20],[],[],[21,43],[44,61],[62,80],[81,100],[101,120],[121,1
 
 person_index_6 = [[1,20],[21,40],[41,61],[62,81],[82,101],[102,121],[122,142],[143,162],[163,182],[183,201],[202,221],[222,237],[238,256],[257,276],[277,296],[297,316],[317,339],[340,360],[361,382]]
 
-def for_21_class(MOD_NUM):
+def for_21_class(MOD_NUM=3):
     f_train = open('my_train.txt', 'w')
     f_test = open('my_test.txt', 'w')
 
@@ -48,7 +48,7 @@ def for_21_class(MOD_NUM):
     f_train.close()
     f_test.close()
 
-def for_6_class(MOD_NUM):
+def for_6_class(MOD_NUM=3):
     f_train = open('my_train.txt', 'w')
     f_test = open('my_test.txt', 'w')
 
@@ -79,7 +79,11 @@ def cross_val_6_class():
 
     file_arr = ['crop\\1', 'crop\\2', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
 
-    test_person = [0,3,8,13,16]   # 19個人當中選5個來當testing data
+    #test_person = [0,7,13,15,17]   # 19個人當中選5個來當testing data
+    test_person = [18]               # 19個人當中選1個來當testing data
+
+    print('cross_val_6_class, test_person = ', end='')
+    print(test_person)
 
     for arr in range(len(file_arr)):
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
@@ -138,39 +142,59 @@ def cross_val_21_class():
 
     file_arr = ['crop\\1', 'crop\\2', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
 
+    #test_person = [0,7,13,15,17]   # 19個人當中選5個來當testing data
+    test_person = [4]               # 19個人當中選1個來當testing data
+
+    print('cross_val_21_class, test_person = ', end='')
+    print(test_person)
+
+    label = -3
+
     for arr in range(len(file_arr)):
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
             #print(dirPath, dirNames, fileNames)
             #print(dirPath)
             s = ''
 
-            if len(dirPath) == 13:
-                s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_4_cam\\' + dirPath + ' ' + str(len(fileNames)) + ' ' + dirPath.split('\\')[1] + '\n'
+            if len(dirPath) == 8:
+                label += 1
 
+            if len(dirPath) == 13:
+                if dirPath.split('\\')[1] == '1':
+                    s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_4_cam\\' + dirPath + ' ' + str(len(fileNames)) + ' 1\n'
+                else:
+                    #print(label)
+                    s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_4_cam\\' + dirPath + ' ' + str(len(fileNames)) + ' ' + str(label) + '\n'
+                
                 if len(fileNames) != 0:
-                    if dirPath.split('\\')[1] == '1' and int(dirPath.split('\\')[-1].replace('\n', '')) >= 187:
-                        f_test.write(s)
-                    elif dirPath.split('\\')[1] == '2' and int(dirPath.split('\\')[-1].replace('\n', '')) >= 272:
-                        f_test.write(s)
-                    elif dirPath.split('\\')[1] == '3' and int(dirPath.split('\\')[-1].replace('\n', '')) >= 300:
-                        f_test.write(s)
-                    elif dirPath.split('\\')[1] == '4' and int(dirPath.split('\\')[-1].replace('\n', '')) >= 290:
-                        f_test.write(s)
-                    elif dirPath.split('\\')[1] == '5' and int(dirPath.split('\\')[-1].replace('\n', '')) >= 260:
-                        f_test.write(s)
-                    elif dirPath.split('\\')[1] == '6' and int(dirPath.split('\\')[-1].replace('\n', '')) >= 297:
-                        f_test.write(s)
-                    else:
+                    my_index = int(dirPath.split('\\')[-1].replace('\n', ''))
+                    for_loop_cou = 0
+                    for i in range(len(test_person)):
+                        if dirPath.split('\\')[1] == '1' and person_index_1[test_person[i]][0] <= my_index and my_index <= person_index_1[test_person[i]][1]:
+                            f_test.write(s)
+                        elif dirPath.split('\\')[1] == '2' and person_index_2[test_person[i]][0] <= my_index and my_index <= person_index_2[test_person[i]][1]:
+                            f_test.write(s)
+                        elif dirPath.split('\\')[1] == '3' and person_index_3[test_person[i]][0] <= my_index and my_index <= person_index_3[test_person[i]][1]:
+                            f_test.write(s)
+                        elif dirPath.split('\\')[1] == '4' and person_index_4[test_person[i]][0] <= my_index and my_index <= person_index_4[test_person[i]][1]:
+                            f_test.write(s)
+                        elif dirPath.split('\\')[1] == '5' and person_index_5[test_person[i]][0] <= my_index and my_index <= person_index_5[test_person[i]][1]:
+                            f_test.write(s)
+                        elif dirPath.split('\\')[1] == '6' and person_index_6[test_person[i]][0] <= my_index and my_index <= person_index_6[test_person[i]][1]:
+                            f_test.write(s)
+                        else:
+                            for_loop_cou += 1
+                    if for_loop_cou == len(test_person):
                         f_train.write(s)
     f_train.close()
     f_test.close()
 
 
 def main():
-    #MOD_3_6_class()
-    #MOD_3_21_class()
-    cross_val_6_class()
-    #cross_val_21_class()
+    #for_6_class(MOD_NUM=5)
+    #for_21_class(MOD_NUM=5)
+    #cross_val_6_class()
+    cross_val_21_class()
     
 
 

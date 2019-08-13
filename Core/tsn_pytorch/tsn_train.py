@@ -1,6 +1,8 @@
 import argparse
 import os
 import time
+import numpy as np
+import matplotlib.pyplot as plt
 import shutil
 import torch
 import torchvision
@@ -15,15 +17,17 @@ from tsn_pytorch.transforms import *
 from tsn_pytorch.opts import parser
 
 '''
-$ python tsn_train.py 6 RGB ..\..\Dataset\my_dataset_4_cam\my_train.txt ..\..\Dataset\my_dataset_4_cam\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 45 -b 16 -j 0 --dropout 0.8 --gpus 0
+$ python tsn_train.py 6 RGB ..\..\Dataset\my_dataset_4_cam\my_train.txt ..\..\Dataset\my_dataset_4_cam\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 40 -b 16 -j 0 --dropout 0.8 --gpus 0 --eval-freq 2
 
-$ python tsn_train.py 21 RGB ..\..\Dataset\my_dataset_4_cam\my_train.txt ..\..\Dataset\my_dataset_4_cam\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 45 -b 16 -j 0 --dropout 0.8 --gpus 0
+$ python tsn_train.py 21 RGB ..\..\Dataset\my_dataset_4_cam\my_train.txt ..\..\Dataset\my_dataset_4_cam\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 40 -b 16 -j 0 --dropout 0.8 --gpus 0 --eval-freq 2
 
-$ python tsn_train.py 7 RGB ..\..\Dataset\my_dataset_holo\my_train.txt ..\..\Dataset\my_dataset_holo\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 50 -b 16 -j 0 --dropout 0.8 --gpus 0
+$ python tsn_train.py 7 RGB ..\..\Dataset\my_dataset_holo\my_train.txt ..\..\Dataset\my_dataset_holo\my_test.txt --arch resnet34 --num_segments 3 --gd 20 --lr 0.001 --lr_steps 30 60 --epochs 50 -b 16 -j 0 --dropout 0.8 --gpus 0 --eval-freq 2
 '''
 
 best_prec1 = 0
 num_class = 0
+
+eval_arr = np.array([0], np.float64)
 
 def main():
     global args, best_prec1, num_class
@@ -150,6 +154,14 @@ def main():
                 'best_prec1': best_prec1,
             }, is_best)
 
+    X_axis = np.arange(0, args.epochs + args.eval_freq, args.eval_freq)
+    #print(X_axis)
+    #print(eval_arr)
+    plt.plot(X_axis, eval_arr)
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.show()
+
 
 def train(train_loader, model, criterion, optimizer, epoch):
     batch_time = AverageMeter()
@@ -218,6 +230,7 @@ def validate(val_loader, model, criterion, iter, logger=None):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
+    global eval_arr
 
     # switch to evaluate mode
     model.eval()
@@ -252,6 +265,9 @@ def validate(val_loader, model, criterion, iter, logger=None):
 
     print(('Testing Results: Prec@1 {top1.avg:.3f} Loss {loss.avg:.5f}'
           .format(top1=top1, loss=losses)))
+   
+    eval_arr = np.append(eval_arr, top1.avg)
+    #print(eval_arr.dtype)
 
     return top1.avg
 
