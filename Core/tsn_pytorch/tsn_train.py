@@ -33,20 +33,11 @@ def main():
     global args, best_prec1, num_class
     args = parser.parse_args()
 
-    if args.dataset == 'ucf101':
-        num_class = 101
-    elif args.dataset == 'hmdb51':
-        num_class = 51
-    elif args.dataset == 'kinetics':
-        num_class = 400
-    elif args.dataset == '21':
-        num_class = 21
-    elif args.dataset == '6':
-        num_class = 6
-    elif args.dataset == '7':
-        num_class = 7
+    if (args.dataset_category_number).isdigit():
+        num_class = int(args.dataset_category_number)
+        print('\nDataset category : ', num_class)
     else:
-        raise ValueError('Unknown dataset '+args.dataset)
+        raise ValueError('please input number of category')
 
     model = TSN(num_class, args.num_segments, args.modality,
                 base_model=args.arch,

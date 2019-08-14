@@ -16,7 +16,7 @@ def for_21_class(MOD_NUM=3):
     f_train = open('my_train.txt', 'w')
     f_test = open('my_test.txt', 'w')
 
-    file_arr = ['crop\\1', 'crop\\2', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
+    file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
     
     label = -3
 
@@ -24,13 +24,13 @@ def for_21_class(MOD_NUM=3):
         cou = 0
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
             #print(dirPath, dirNames, fileNames)
-            #print(dirPath)
+            #print(dirPath, len(dirPath.split('\\')))
             s = ''
-
-            if len(dirPath) == 8:
+            
+            if len(dirPath.split('\\')) == 3:
                 label += 1
 
-            if len(dirPath) == 13:
+            if len(dirPath.split('\\')) == 4:
             
                 if dirPath.split('\\')[1] == '1':
                     s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_4_cam\\' + dirPath + ' ' + str(len(fileNames)) + ' 1\n'
@@ -45,6 +45,7 @@ def for_21_class(MOD_NUM=3):
                     else:
                         f_train.write(s)
                         cou += 1
+            
     f_train.close()
     f_test.close()
 
@@ -52,7 +53,9 @@ def for_6_class(MOD_NUM=3):
     f_train = open('my_train.txt', 'w')
     f_test = open('my_test.txt', 'w')
 
-    file_arr = ['crop\\1', 'crop\\2', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
+    file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
+
+    label = 0
 
     for arr in range(len(file_arr)):
         cou = 0
@@ -60,8 +63,10 @@ def for_6_class(MOD_NUM=3):
             #print(dirPath, dirNames, fileNames)
             #print(dirPath)
             s = ''
-            if len(dirPath) == 13:
-                s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_4_cam\\' + dirPath + ' ' + str(len(fileNames)) + ' ' + dirPath.split('\\')[1] + '\n'
+            if len(dirPath.split('\\')) == 2:
+                label += 1
+            if len(dirPath.split('\\')) == 4:
+                s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_4_cam\\' + dirPath + ' ' + str(len(fileNames)) + ' ' + str(label) + '\n'
                 if len(fileNames) != 0:
                     if cou % MOD_NUM == 0:
                         f_test.write(s)
@@ -191,10 +196,10 @@ def cross_val_21_class():
 
 
 def main():
-    #for_6_class(MOD_NUM=5)
-    #for_21_class(MOD_NUM=5)
+    #for_6_class(MOD_NUM=4)
+    for_21_class(MOD_NUM=4)
     #cross_val_6_class()
-    cross_val_21_class()
+    #cross_val_21_class()
     
 
 
