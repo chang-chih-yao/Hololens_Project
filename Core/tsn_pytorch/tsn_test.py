@@ -130,6 +130,8 @@ def validate(val_loader, model, crop_size):
     batch_time = AverageMeter()
     top1 = AverageMeter()
 
+    result = open('result.txt', 'w')
+
     with open(args.test_list, 'r') as fp:
         lines = fp.readlines()
 
@@ -186,7 +188,7 @@ def validate(val_loader, model, crop_size):
     
     # print(top1_val)
 
-
+    my_time = time.time()
 
     for i, (input, target) in enumerate(val_loader):
         # print(input.dtype)            # torch.float32
@@ -225,14 +227,16 @@ def validate(val_loader, model, crop_size):
         # print(i)
 
         
-        if i % 5 == 0:
+        if i % 10 == 0:
             print(('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Prec@1 ({top1.avg:.3f})'.format(
                    i, len(val_loader), batch_time=batch_time,
                    top1=top1)))
         
-
+        result_str = lines[i].split(' ')[0] + ' > ' + str(top1_val) + '\n'
+        #print(result_str, end='')
+        result.write(result_str)
 
         '''
         print(('Test: [{0}/{1}]\t'
@@ -267,7 +271,9 @@ def validate(val_loader, model, crop_size):
 
 
     # print(time.time() - total)     # total time
-        
+    print(time.time() - my_time, end='')
+    print(' sec')
+    result.close()
 
 
 class AverageMeter(object):
