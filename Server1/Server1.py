@@ -59,7 +59,7 @@ trans = trans = torchvision.transforms.Compose([
 
 
 ################################### Socket #######################################
-HOST = '192.168.208.120'
+HOST = '192.168.60.2'
 PORT = 9000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp

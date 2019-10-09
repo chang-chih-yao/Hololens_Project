@@ -1,6 +1,7 @@
 import os
 
 file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
+my_file_arr = ['crop\\1', 'crop\\2', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
 
 person_index_1 = [[1,12], [13,30], [31,41], [42,52], [53,63], [64,79], [80,89], [90,98], [99,110], [111,118], [119,130], [131,143], [144,154], [155,175], [176,186], [187,208], [209,219], [220,236], [237,262]]
 
@@ -185,8 +186,8 @@ def one_cam_testing_data(cam_Num=0):
 
     label = 0
 
-    for arr in range(len(file_arr)):
-        for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
+    for arr in range(len(my_file_arr)):
+        for dirPath, dirNames, fileNames in os.walk(my_file_arr[arr]):
             #print(dirPath, dirNames, fileNames)
             #print(dirPath)
             s = ''
@@ -255,11 +256,12 @@ def main():
     #cross_val_6_class()
     #cross_val_21_class()
 
-    #one_cam_testing_data(3)
+    one_cam_testing_data(1)
+
 
     #cross_val_cam(3)
 
-    cross_view(1, 2)
+    #cross_view(2, 3)
 
 
 if __name__ == '__main__':

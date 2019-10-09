@@ -1,3 +1,4 @@
+# This is record server program.
 import time
 import socket
 import cv2
@@ -6,7 +7,7 @@ import os
 import threading
 
 ################################### Socket #######################################
-HOST = '192.168.11.107'
+HOST = '192.168.60.2'
 PORT = 9000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
