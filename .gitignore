@@ -123,8 +123,11 @@ Dataset/my_dataset_holo/crop/5
 Dataset/my_dataset_holo/crop/5_start
 Dataset/my_dataset_holo/crop/5_end
 Dataset/my_dataset_holo/crop/6
-Dataset/my_dataset_holo/crop/6_start
-Dataset/my_dataset_holo/crop/6_end
+Dataset/my_dataset_holo/crop/7
+Dataset/my_dataset_holo/crop/8
+Dataset/my_dataset_holo/crop/9
+Dataset/my_dataset_holo/crop/10
+Dataset/my_dataset_holo/crop/11
 
 Dataset/my_dataset_holo/Raw_data
 
@@ -134,6 +137,11 @@ Dataset/my_dataset_holo/3
 Dataset/my_dataset_holo/4
 Dataset/my_dataset_holo/5
 Dataset/my_dataset_holo/6
+Dataset/my_dataset_holo/7
+Dataset/my_dataset_holo/8
+Dataset/my_dataset_holo/9
+Dataset/my_dataset_holo/10
+Dataset/my_dataset_holo/11
 
 
 Dataset/my_dataset_4_cam/Raw_data
