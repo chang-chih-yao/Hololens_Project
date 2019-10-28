@@ -22,6 +22,25 @@ from tsn_pytorch.transforms import *
 
 import tkinter
 
+'''
+action_label -> action_name
+1  -> 1         (No Action)
+2  -> 2_start   (螺旋丸)
+3  -> 2_end
+4  -> 3_start   (甩)
+5  -> 3_end
+6  -> 4_start   (龜派氣功)
+7  -> 4_end
+8  -> 5_start   (落雷)
+9  -> 5_end
+10 -> 6         (防禦壹之型)
+11 -> 7         (防禦貳之型) 太極
+12 -> 8         (防禦參之型) 黑豹
+13 -> 9         (防禦肆之型) 體操?
+14 -> 10        (防禦伍之型) 結印
+15 -> 11        (踢)
+'''
+
 ################################### OpenPose ###########################################
 gpu_options = tf.GPUOptions(allow_growth=True)
 #e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
@@ -30,13 +49,13 @@ e = TfPoseEstimator(get_graph_path('mobilenet_v2_large'), target_size=(432, 368)
 
 ############################## Action Recognition ######################################
 global num_class
-num_class = 7
+num_class = 15
 
 model = TSN(num_class, 3, 'RGB',
             base_model='resnet34',
             consensus_type='avg', dropout=0.7)
 
-checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_0720_6_actions_7_class_MOD_4.pth')
+checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1023_11_actions_15_class_MOD_4.pth')
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
@@ -149,7 +168,6 @@ class TServer(threading.Thread):
         self.pre_RElbow = np.array([[0],[0]],np.float32)
         self.ori_RWrist = np.array([[0],[0]],np.float32)
         self.pre_RWrist = np.array([[0],[0]],np.float32)
-        
 
     def run(self):
         print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
@@ -257,28 +275,25 @@ class TServer(threading.Thread):
                 self.run_holo_reset()
                 break
 
-            img_data = data[0:frame_size_int]
+            img_data = data[0:frame_size_int]              # 封包的前段是 HoloLens 傳過來的 image data
+            frame = np.fromstring(img_data, dtype=np.uint8)
+            dec_img = cv2.imdecode(frame, 1)
+            crop_img = dec_img.copy()
+
             if player == 'P0':
-                status_data_p0 = data[frame_size_int:]
+                status_data_p0 = data[frame_size_int:]     # 封包的後段才是 HoloLens 傳過來的 status, status = "被對方的技能(Skill_2)打到, end game, start new game"
             elif player == 'P1':
                 status_data_p1 = data[frame_size_int:]
+
             # if status_data_p0[0] == b'1'[0] or status_data_p0[2] == b'1'[0] or status_data_p0[4] == b'1'[0]:
             #     print(status_data_p0.split(b'|')[0])
             # else:
             #     print('------------------')
 
-            frame = np.fromstring(img_data, dtype=np.uint8)
-            dec_img = cv2.imdecode(frame, 1)
-        
-            crop_img = dec_img.copy()
-
-
-
-            #self.lock.acquire()
             humans = e.inference(dec_img, resize_to_default=True, upsample_size=4.0)
             img, key_points = TfPoseEstimator.draw_one_human(dec_img, humans, imgcopy=False, score=0.8)
 
-            ###### Kalman filter ######
+            ####################### Kalman filter #######################
             if(key_points[3][0] != 0 or key_points[3][1] != 0):
                 self.ori_RElbow = np.array([[key_points[3][0]],[key_points[3][1]]], np.float32)
                 self.kalman_RElbow.correct(self.ori_RElbow)
@@ -294,10 +309,10 @@ class TServer(threading.Thread):
             key_points[4][0] = self.pre_RWrist[0,0]
             key_points[4][1] = self.pre_RWrist[1,0]
 
+
             co_str = self.openpose_coordinate_to_str(key_points)
 
-            cv2.putText(img, "FPS: %f" % (1.0 / (time.time() - self.fps_time)),
-                        (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(img, "FPS: %f" % (1.0 / (time.time() - self.fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.imshow(window_name + player, img)
 
 
@@ -323,55 +338,54 @@ class TServer(threading.Thread):
             if self.count % 3 == 0 and len(images) == 2:
                 images.extend([img_tsn])
                 # print(images[0].size)
-                # print(images[1].size)
-                # print(images[2].size)
                 rst = trans(images)
                 rst = torch.unsqueeze(rst, 0)
-                self.action = validate(model, rst)
+                self.action = validate(model, rst)         # predict action
+                if no_human == 0:
+                    print(self.action)
+                del images[0]
 
-                if no_human == 1:      # no human
-                    if player == 'P0':
-                        if global_action_p1 == 2:
-                            temp_global_cou_p1 += 1
-                        else:
-                            temp_global_cou_p1 = 0
-                        if temp_global_cou_p1 > 10:
-                            global_action_p1 = 3
-                        
-                        holo_action_p1 = global_action_p1
-                    elif player == 'P1':
-                        if global_action_p0 == 2:
-                            temp_global_cou_p0 += 1
-                        else:
-                            temp_global_cou_p0 = 0
-                        if temp_global_cou_p0 > 10:
-                            global_action_p0 = 3
-                        
-                        holo_action_p0 = global_action_p0
+                if no_human == 1:      # if no human
+                    holo_action_p0 = 1
+                    holo_action_p1 = 1
+                    # if player == 'P0':
+                    #     if global_action_p1 == 2:
+                    #         temp_global_cou_p1 += 1
+                    #     else:
+                    #         temp_global_cou_p1 = 0
+                    #     if temp_global_cou_p1 > 10:
+                    #         global_action_p1 = 3
+                    #     holo_action_p1 = global_action_p1
+                    # elif player == 'P1':
+                    #     if global_action_p0 == 2:
+                    #         temp_global_cou_p0 += 1
+                    #     else:
+                    #         temp_global_cou_p0 = 0
+                    #     if temp_global_cou_p0 > 10:
+                    #         global_action_p0 = 3
+                    #     holo_action_p0 = global_action_p0
                 else:
                     if player == 'P0':
                         holo_action_p1 = self.action
                     elif player == 'P1':
                         holo_action_p0 = self.action
                         
-                del images[0]
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
                 
-            #self.lock.release()
 
             if player == 'P0':
                 if status_data_p0[2] == b'1'[0]:     # HoloLens那端已經進入end game畫面
-                    holo_action_p1 = 1               # 遊戲reset階段辨識到的動作一率為no action
+                    holo_action_p1 = 1               # 遊戲 reset 階段辨識到的動作一率為 no action(1)
             elif player == 'P1':
                 if status_data_p1[2] == b'1'[0]:
                     holo_action_p0 = 1
+
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
             co_str = co_str + ',' + str(defense_skill_2_p0) + ',' + str(defense_skill_2_p1) + ',' + str(blood_effect_p0) + ',' + str(blood_effect_p1)
             #print(co_str)
             co_str = bytes(co_str, 'ascii')
-            #print(str(global_action))
 
             ####################### for unity_demo img_data #####################
             if player == 'P0':
@@ -457,17 +471,17 @@ class GameSystem(threading.Thread):
 
         while(True):
             ############################# p0 看 p1 #############################
-            if status_data_p0[0] == b'1'[0]:  # 如果p0被技能(Skill_2)打到
-                if holo_action_p0 != 7:       # 如果p0 沒有 做防禦動作
-                    blood_effect_p0 = 1
+            if status_data_p0[0] == b'1'[0]:        # 如果p0被技能(Skill_2)打到
+                if holo_action_p0 != 10:             # 如果p0 沒有 做防禦動作
+                    blood_effect_p0 = 1             # p0 受傷噴血的動畫，這個會透過socket傳給hololens
                     gamepoint_p0 -= skill_2_damage  # 扣血
-                else:                         # 如果p0 有 做防禦動作
-                    defense_skill_2_p0 = 1    # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
+                else:                               # 如果p0 有 做防禦動作
+                    defense_skill_2_p0 = 1          # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
                 
                 if gamepoint_p0 != 0:
                     time.sleep(0.5)
-                    blood_effect_p0 = 0       # init
-                    defense_skill_2_p0 = 0    # init
+                    blood_effect_p0 = 0             # init
+                    defense_skill_2_p0 = 0          # init
                     time.sleep(skill_wait_time)
             '''
             if holo_action_p1 == 2:
@@ -493,7 +507,7 @@ class GameSystem(threading.Thread):
 
             ############################# p1 看 p0 #############################
             if status_data_p1[0] == b'1'[0]:  # 如果p1被技能(Skill_2)打到
-                if holo_action_p1 != 7:       # 如果p1 沒有 做防禦動作
+                if holo_action_p1 != 10:       # 如果p1 沒有 做防禦動作
                     blood_effect_p1 = 1
                     gamepoint_p1 -= skill_2_damage
                 else:                         # 如果p1 有 做防禦動作

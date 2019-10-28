@@ -18,6 +18,26 @@ import cv2
 '''
 $ python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth --arch resnet34
 $ python tsn_test.py 7 RGB ..\..\Dataset\my_dataset_holo\my_test.txt pth\holo_2019_0521_6_actions_7_class.pth --arch resnet34
+$ python tsn_test.py 7 RGB ..\..\Dataset\my_dataset_holo\my_test.txt pth\holo_2019_1023_11_actions_15_class_MOD_4.pth --arch resnet34
+'''
+
+'''
+action_label -> action_name
+1  -> 1         (No Action)
+2  -> 2_start   (螺旋丸)
+3  -> 2_end
+4  -> 3_start   (甩)
+5  -> 3_end
+6  -> 4_start   (龜派氣功)
+7  -> 4_end
+8  -> 5_start   (落雷)
+9  -> 5_end
+10 -> 6         (防禦壹之型)
+11 -> 7         (防禦貳之型) 太極
+12 -> 8         (防禦參之型) 黑豹
+13 -> 9         (防禦肆之型) 體操?
+14 -> 10        (防禦伍之型) 結印
+15 -> 11        (踢)
 '''
 
 # options
