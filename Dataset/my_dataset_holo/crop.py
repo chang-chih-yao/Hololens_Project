@@ -16,13 +16,13 @@ e = TfPoseEstimator(get_graph_path('cmu'), target_size=(432, 368), tf_config=tf.
 
 fps_time = 0
 
-# file_arr = ['D:/Code/Hololens_Project/Dataset/my_dataset_holo/1', 
-#             'D:/Code/Hololens_Project/Dataset/my_dataset_holo/2', 
-#             'D:/Code/Hololens_Project/Dataset/my_dataset_holo/3', 
-#             'D:/Code/Hololens_Project/Dataset/my_dataset_holo/4', 
-#             'D:/Code/Hololens_Project/Dataset/my_dataset_holo/5', 
-#             'D:/Code/Hololens_Project/Dataset/my_dataset_holo/6']  # 如果有新的action，要調整
-file_arr = ['D:/Code/Hololens_Project/Dataset/my_dataset_holo/2/2_0215']
+file_arr = ['D:/Code/Hololens_Project/Dataset/my_dataset_holo/1', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/2', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/3', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/4', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/5', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/6']  # 如果有新的action，要調整
+
 old_file_num = [217, 215, 139, 137, 130, 131]                      # [ 舊的 label_1 資料夾的個數, 舊的 label_2 資料夾的個數, ... ] 這樣他就會跳過舊的，只crop新的片段
 
 for arr in range(len(file_arr)):
