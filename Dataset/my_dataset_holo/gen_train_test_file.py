@@ -1,5 +1,7 @@
 import os
 
+file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3_start', 'crop\\3_end', 'crop\\4_start', 'crop\\4_end', 'crop\\5_start', 'crop\\5_end', 'crop\\6', 'crop\\7', 'crop\\8', 'crop\\9', 'crop\\10', 'crop\\11']   # 15 classes
+
 person_index_1 = [[1,136],[137,150],[151,160],[161,162],[163,173],[174,179],[180,188],[178,196],[197,204],[205,217],[218,245],[246,264],[265,276]]
 
 person_index_2 = [[1,83],[84,97],[98,112],[113,125],[126,144],[145,154],[155,169],[170,184],[185,199],[200,214],[215,235],[236,263],[264,281]]
@@ -14,24 +16,25 @@ person_index_6 = [[],[1,15],[16,30],[31,42],[43,56],[57,71],[72,86],[87,101],[10
 
 person_index_7 = [[],[1,14],[15,27],[28,39],[40,54],[55,71],[72,85],[86,100],[101,115],[116,131],[132,151],[152,172],[173,191]]
 
-def MOD_3():
+def MOD_X(MOD_NUM=3):
+
+    print('MOD_' + str(MOD_NUM))
+
     f_train = open('my_train.txt', 'w')
     f_test = open('my_test.txt', 'w')
 
     #size_1 = 34
     #size_2 = 38
 
-    file_arr = ['crop\\1', 'crop\\2', 'crop\\3', 'crop\\4', 'crop\\5', 'crop\\6']
-    #file_arr = ['crop/1', 'crop/2']
-    label_arr = [' 1\n', ' 2\n', ' 3\n', ' 4\n', ' 5\n', ' 6\n']
+    label_arr = [' 1\n', ' 2\n', ' 3\n', ' 4\n', ' 5\n', ' 6\n', ' 7\n', ' 8\n', ' 9\n', ' 10\n', ' 11\n', ' 12\n', ' 13\n', ' 14\n', ' 15\n']
 
     for arr in range(len(file_arr)):
         cou = 0
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
             #print(dirPath, dirNames)
-            s = 'D:\\Dataset\\Action\\my_dataset\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
+            s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_holo\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
             if len(fileNames) != 0:
-                if cou % 3 == 0:
+                if cou % MOD_NUM == 0:
                     f_test.write(s)
                     cou += 1
                 else:
@@ -53,7 +56,7 @@ def for_7_class(MOD_NUM=3):
         cou = 0
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
             #print(dirPath, dirNames)
-            s = 'D:\\Code\Hololens_Project\\Dataset\\my_dataset_holo\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
+            s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_holo\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
             if len(fileNames) != 0:
                 if cou % MOD_NUM == 0:
                     f_test.write(s)
@@ -82,7 +85,7 @@ def for_cross_val_7_class():
     for arr in range(len(file_arr)):
         for dirPath, dirNames, fileNames in os.walk(file_arr[arr]):
             #print(dirPath, dirNames)
-            s = 'D:\\Code\Hololens_Project\\Dataset\\my_dataset_holo\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
+            s = 'D:\\Code\\Hololens_Project\\Dataset\\my_dataset_holo\\' + dirPath + ' ' + str(len(fileNames)) + label_arr[arr]
             if len(dirPath) == 13 or len(dirPath) == 17 or len(dirPath) == 15:
                 if len(dirPath) == 13:
                     my_index = int(dirPath.split('_')[-1])
@@ -114,7 +117,7 @@ def for_cross_val_7_class():
 
 
 if __name__ == "__main__":
-    #MOD_3()
+    MOD_X(MOD_NUM=3)
     #for_7_class(MOD_NUM=3)
-    for_cross_val_7_class()
+    #for_cross_val_7_class()
     

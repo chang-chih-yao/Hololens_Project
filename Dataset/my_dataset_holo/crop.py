@@ -17,13 +17,13 @@ e = TfPoseEstimator(get_graph_path('cmu'), target_size=(432, 368), tf_config=tf.
 fps_time = 0
 
 file_arr = ['D:/Code/Hololens_Project/Dataset/my_dataset_holo/1', 
-            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/2', 
-            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/3', 
-            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/4', 
-            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/5', 
-            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/6']  # 如果有新的action，要調整
-
-old_file_num = [217, 215, 139, 137, 130, 131]                      # [ 舊的 label_1 資料夾的個數, 舊的 label_2 資料夾的個數, ... ] 這樣他就會跳過舊的，只crop新的片段
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/7', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/8', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/9', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/10', 
+            'D:/Code/Hololens_Project/Dataset/my_dataset_holo/11']  # 如果有新的action，要調整
+#file_arr = ['D:/Code/Hololens_Project/Dataset/my_dataset_holo/2/2_0215']
+old_file_num = [276, 0, 0, 0, 0, 0]                      # [ 舊的 label_1 資料夾的個數, 舊的 label_2 資料夾的個數, ... ] 這樣他就會跳過舊的，只crop新的片段
 
 for arr in range(len(file_arr)):
     err = 0
@@ -35,8 +35,8 @@ for arr in range(len(file_arr)):
             img_dir = img_path.split('img_')[0].replace('my_dataset_holo', 'my_dataset_holo/crop') # 'D:/Dataset/Action/my_dataset/crop/1/1_0001/'
             img_name = img_dir + img_path.split('/')[-1]                                           # 'D:/Dataset/Action/my_dataset/crop/1/1_0001/img_00001.jpg'
             # print(img_name)
-            # if int(img_dir.split('_')[-1].replace('/', '')) <= old_file_num[arr]:
-            #     break
+            if int(img_dir.split('_')[-1].replace('/', '')) <= old_file_num[arr]:                  # 跳過舊的，只crop新的片段
+                break
             if not os.path.exists(img_dir):
                 os.mkdir(img_dir)
             
@@ -45,9 +45,6 @@ for arr in range(len(file_arr)):
 
             humans = e.inference(image, resize_to_default=True, upsample_size=4.0)
             npimg, key_points = TfPoseEstimator.draw_one_human(image, humans, imgcopy=False, score=0.8)
-
-            #humans = e.inference(dec_img, resize_to_default=True, upsample_size=4.0)
-            #img, key_points = TfPoseEstimator.draw_one_human(dec_img, humans, imgcopy=False, score=0.8)
 
             cv2.putText(npimg,  "FPS: %f" % (1.0 / (time.time() - fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.imshow('tf-pose-estimation result', npimg)
