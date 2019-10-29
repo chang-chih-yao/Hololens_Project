@@ -6,6 +6,8 @@ import threading
 import argparse
 import logging
 import datetime
+import shutil
+import os
 
 import tensorflow as tf
 
@@ -55,7 +57,7 @@ model = TSN(num_class, 3, 'RGB',
             base_model='resnet34',
             consensus_type='avg', dropout=0.7)
 
-checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1023_11_actions_15_class_MOD_4.pth')
+checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1023_11_actions_15_class_MOD_5.pth')
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
@@ -252,6 +254,21 @@ class TServer(threading.Thread):
         global co_str_cp
 
         images = list()
+        fps_array = list()
+        avg_fps = 15.0
+        for i in range(5):
+            fps_array.append(15.0)
+
+        ################### for debug ###################
+        temp_cou = 0
+        debug_root_path = '11_action_15_class_MOD_5/'
+        if not os.path.exists(debug_root_path):
+            os.mkdir(debug_root_path)
+        else:
+            shutil.rmtree(debug_root_path)
+            os.mkdir(debug_root_path)
+        debug_file = open(debug_root_path + 'result.txt', 'w')
+
 
         while(True):
 
@@ -314,9 +331,12 @@ class TServer(threading.Thread):
 
             co_str = self.openpose_coordinate_to_str(key_points)
 
-            cv2.putText(img, "FPS: %f" % (1.0 / (time.time() - self.fps_time)), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            del fps_array[0]
+            fps_array.append(1.0 / (time.time() - self.fps_time))
+            avg_fps = sum(fps_array)/5.0
+            cv2.putText(img, "FPS: %f" % (avg_fps), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.imshow(window_name + player, img)
-
+            
 
             if key_points[1][0] == 0 or key_points[1][1] == 0:    # no human
                 x1 = 224 - 126
@@ -359,7 +379,11 @@ class TServer(threading.Thread):
                         top5, float(my_output[0][top5])
                     )
                     #print(self.action)
-                    print(detail)
+                    img_dir = debug_root_path + '{:04d}.jpg'.format(temp_cou)
+                    cv2.imwrite(img_dir, crop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 60])
+                    #print(detail)
+                    debug_file.write(detail + '\n')
+                    temp_cou += 1
 
                 if (self.action == 0):
                     self.action = num_class
@@ -432,6 +456,7 @@ class TServer(threading.Thread):
         cv2.destroyWindow(window_name + player)
         print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
         print ('Client %s:%s disconnected. (HoloLens)' % self.address)
+        debug_file.close()
         self.socket.close()
 
     def run_4cam(self, window_name):
