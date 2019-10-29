@@ -1,6 +1,8 @@
 import os
 
-file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3_start', 'crop\\3_end', 'crop\\4_start', 'crop\\4_end', 'crop\\5_start', 'crop\\5_end', 'crop\\6', 'crop\\7', 'crop\\8', 'crop\\9', 'crop\\10', 'crop\\11']   # 15 classes
+#file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3_start', 'crop\\3_end', 'crop\\4_start', 'crop\\4_end', 'crop\\5_start', 'crop\\5_end', 'crop\\6', 'crop\\7', 'crop\\8', 'crop\\9', 'crop\\10', 'crop\\11']   # 15 classes
+
+file_arr = ['crop\\1', 'crop\\2_start', 'crop\\2_end', 'crop\\3_start', 'crop\\3_end', 'crop\\4_start', 'crop\\4_end', 'crop\\5_start', 'crop\\5_end', 'crop\\6', 'crop\\8', 'crop\\9', 'crop\\10']   # 13 classes
 
 person_index_1 = [[1,136],[137,150],[151,160],[161,162],[163,173],[174,179],[180,188],[178,196],[197,204],[205,217],[218,245],[246,264],[265,276]]
 
@@ -117,7 +119,7 @@ def for_cross_val_7_class():
 
 
 if __name__ == "__main__":
-    MOD_X(MOD_NUM=3)
+    MOD_X(MOD_NUM=5)
     #for_7_class(MOD_NUM=3)
     #for_cross_val_7_class()
     
