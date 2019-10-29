@@ -18,8 +18,9 @@ import cv2
 '''
 $ python tsn_test.py 21 RGB my_test.txt _rgb_checkpoint.pth --arch resnet34
 $ python tsn_test.py 7 RGB ..\..\Dataset\my_dataset_holo\my_test.txt pth\holo_2019_0521_6_actions_7_class.pth --arch resnet34
-$ python tsn_test.py 7 RGB ..\..\Dataset\my_dataset_holo\my_test.txt pth\holo_2019_1023_11_actions_15_class_MOD_4.pth --arch resnet34
+$ python tsn_test.py 15 RGB ..\..\Dataset\my_dataset_holo\my_test.txt pth\
 '''
+
 
 '''
 action_label -> action_name
@@ -150,7 +151,7 @@ def validate(val_loader, model, crop_size):
     batch_time = AverageMeter()
     top1 = AverageMeter()
 
-    result = open('result.txt', 'w')
+    #result = open('result.txt', 'w')
 
     with open(args.test_list, 'r') as fp:
         lines = fp.readlines()
@@ -224,7 +225,7 @@ def validate(val_loader, model, crop_size):
         output = model(input_var)
         # print(output.shape)           # torch.Size([batch_size, 2])
 
-        topk = (1,)
+        topk = (1,5)
         maxk = max(topk)
         _, pred = output.topk(maxk, 1, True, True)
         pred = pred.t()
@@ -247,16 +248,35 @@ def validate(val_loader, model, crop_size):
         # print(i)
 
         
-        if i % 10 == 0:
-            print(('Test: [{0}/{1}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Prec@1 ({top1.avg:.3f})'.format(
-                   i, len(val_loader), batch_time=batch_time,
-                   top1=top1)))
+        # if i % 10 == 0:
+        #     print(('Test: [{0}/{1}]\t'
+        #           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+        #           'Prec@1 ({top1.avg:.3f})'.format(i, len(val_loader), batch_time=batch_time, top1=top1)))
         
-        result_str = lines[i].split(' ')[0] + ' > ' + str(top1_val) + '\n'
-        #print(result_str, end='')
-        result.write(result_str)
+        top2 = int(pred[1][0])
+        top3 = int(pred[2][0])
+        top4 = int(pred[3][0])
+        top5 = int(pred[4][0])
+
+        if tar_val != top1_val:
+            # detail = (str(top1_val) + '(' + str(float(output[0][int(pred[0][0])])) + '), ' +
+            #         str(top2) + '(' + str(float(output[0][top2])) + '), ' +
+            #         str(top3) + '(' + str(float(output[0][top3])) + '), ' +
+            #         str(top4) + '(' + str(float(output[0][top4])) + '), ' +
+            #         str(top5) + '(' + str(float(output[0][top5])) + '), ')
+            detail = '{:d} ({:.2f}), {:d} ({:.2f}), {:d} ({:.2f}), {:d} ({:.2f}), {:d} ({:.2f})'.format(
+                top1_val, float(output[0][int(pred[0][0])]),
+                top2, float(output[0][top2]),
+                top3, float(output[0][top3]),
+                top4, float(output[0][top4]),
+                top5, float(output[0][top5])
+            )
+            result_str = lines[i].split(' ')[0] + ' (' + str(tar_val) + ')' + ' > ' + detail + ' <--------' + '\n'
+            print(result_str, end='')
+        # else:
+        #     result_str = lines[i].split(' ')[0] + ' (' + str(tar_val) + ')' + ' > ' + str(top1_val) + '\n'
+        #     print(result_str, end='')
+        #result.write(result_str)
 
         '''
         print(('Test: [{0}/{1}]\t'
@@ -291,9 +311,12 @@ def validate(val_loader, model, crop_size):
 
 
     # print(time.time() - total)     # total time
+    print(('Test: [{0}/{1}]\t'
+            'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+            'Prec@1 ({top1.avg:.3f})'.format(i, len(val_loader), batch_time=batch_time, top1=top1)))
     print(time.time() - my_time, end='')
     print(' sec')
-    result.close()
+    #result.close()
 
 
 class AverageMeter(object):

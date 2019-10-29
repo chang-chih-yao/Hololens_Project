@@ -118,16 +118,18 @@ def validate(model, rst):
     input_var = torch.autograd.Variable(rst, volatile=True)
     output = model(input_var)
 
-    topk = (1,)
+    topk = (1,5)
     maxk = max(topk)
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
 
-    top1_val = int(pred[0][0])
-    if top1_val == 0:
-        top1_val = num_class
+    top1 = int(pred[0][0])
+    top2 = int(pred[1][0])
+    top3 = int(pred[2][0])
+    top4 = int(pred[3][0])
+    top5 = int(pred[4][0])
     
-    return top1_val
+    return output, pred
 
 
 
@@ -340,9 +342,28 @@ class TServer(threading.Thread):
                 # print(images[0].size)
                 rst = trans(images)
                 rst = torch.unsqueeze(rst, 0)
-                self.action = validate(model, rst)         # predict action
+                my_output, my_pred = validate(model, rst)         # predict action
+
+                self.action = int(my_pred[0][0])
+                top2 = int(my_pred[1][0])
+                top3 = int(my_pred[2][0])
+                top4 = int(my_pred[3][0])
+                top5 = int(my_pred[4][0])
+
                 if no_human == 0:
-                    print(self.action)
+                    detail = '{:d} ({:.2f}), {:d} ({:.2f}), {:d} ({:.2f}), {:d} ({:.2f}), {:d} ({:.2f})'.format(
+                        self.action, float(my_output[0][int(my_pred[0][0])]),
+                        top2, float(my_output[0][top2]),
+                        top3, float(my_output[0][top3]),
+                        top4, float(my_output[0][top4]),
+                        top5, float(my_output[0][top5])
+                    )
+                    #print(self.action)
+                    print(detail)
+
+                if (self.action == 0):
+                    self.action = num_class
+
                 del images[0]
 
                 if no_human == 1:      # if no human
