@@ -25,6 +25,7 @@ from tsn_pytorch.transforms import *
 import tkinter
 
 '''
+15 class
 action_label -> action_name
 1  -> 1         (No Action)
 2  -> 2_start   (螺旋丸)
@@ -41,6 +42,38 @@ action_label -> action_name
 13 -> 9         (防禦肆之型) 體操?
 14 -> 10        (防禦伍之型) 結印
 15 -> 11        (踢)
+
+
+13 class
+action_label -> action_name
+1  -> 1         (No Action)
+2  -> 2_start   (螺旋丸)
+3  -> 2_end
+4  -> 3_start   (甩)
+5  -> 3_end
+6  -> 4_start   (龜派氣功)
+7  -> 4_end
+8  -> 5_start   (落雷)
+9  -> 5_end
+10 -> 6         (防禦壹之型)
+11 -> 7         (防禦貳之型) 太極
+12 -> 9         (防禦肆之型) 體操?
+13 -> 10        (防禦伍之型) 結印
+
+
+11 class
+action_label -> action_name
+1  -> 1         (No Action)
+2  -> 2_start   (螺旋丸)
+3  -> 2_end
+4  -> 3         (甩)
+5  -> 4_start   (龜派氣功)
+6  -> 4_end
+7  -> 5         (落雷)
+8 -> 6          (防禦壹之型)
+9 -> 7          (防禦貳之型) 太極
+10 -> 9         (防禦肆之型) 體操?
+11 -> 10        (防禦伍之型) 結印
 '''
 
 ################################### OpenPose ###########################################
@@ -51,13 +84,11 @@ e = TfPoseEstimator(get_graph_path('mobilenet_v2_large'), target_size=(432, 368)
 
 ############################## Action Recognition ######################################
 global num_class
-num_class = 15
+num_class = 11
 
-model = TSN(num_class, 3, 'RGB',
-            base_model='resnet34',
-            consensus_type='avg', dropout=0.7)
+model = TSN(num_class, 3, 'RGB', base_model='resnet34', consensus_type='avg', dropout=0.7)
 
-checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1023_11_actions_15_class_MOD_5.pth')
+checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1023_9_actions_11_class_MOD_4_NEW.pth')
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
@@ -261,7 +292,7 @@ class TServer(threading.Thread):
 
         ################### for debug ###################
         temp_cou = 0
-        debug_root_path = '11_action_15_class_MOD_5/'
+        debug_root_path = '9_actions_11_class_MOD_4_CYH/'
         if not os.path.exists(debug_root_path):
             os.mkdir(debug_root_path)
         else:

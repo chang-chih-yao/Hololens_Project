@@ -109,12 +109,7 @@ ENV/
 timeline*.json
 
 # Server1 debug
-Server1/9_action_13_class_MOD_3
-Server1/9_action_13_class_MOD_4
-Server1/9_action_13_class_MOD_5
-Server1/11_action_15_class_MOD_3
-Server1/11_action_15_class_MOD_4
-Server1/11_action_15_class_MOD_5
+Server1/debug
 
 # Dataset
 Dataset/my_dataset_holo/crop/1
