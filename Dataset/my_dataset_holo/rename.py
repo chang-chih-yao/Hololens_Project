@@ -1,25 +1,19 @@
 import os
 
-file_arr = ['1', '2']
+file_arr = ['6']
 
 for arr in file_arr:
+    cou = 1
     for dirPath, dirNames, fileNames in os.walk(arr):
-        print('dirPath : ', dirPath)
-        print('dirNames : ', dirNames)
-        
-        cou = 1
-        '''
-        for f in dirNames:
-            dir_path = os.path.join(dirPath, f)  # 1\1_0001
-            #print(dir_path)
-            new_dir_path = dir_path.replace('2_', '1_')
-            print(new_dir_path)
-            os.rename(dir_path, new_dir_path)
-        '''
-
-        for f in fileNames:
-            img_dir = os.path.join(dirPath, f)
-            #print(img_dir)
-            new_img_dir = img_dir.replace(f, 'img_{:05d}.jpg'.format(cou))
-            os.rename(img_dir, new_img_dir)
+        if (len(dirPath)==8):
+            print('dirPath : ', dirPath, end='')
+            print(' ', end='')
+            #print('dirNames : ', dirNames)
+            
+            
+            num = int(dirPath.split('_')[-1])
+            new_dir = dirPath.split('_')[0] + '_{:04d}'.format(cou)
+            print(new_dir)
             cou += 1
+            os.rename(dirPath, new_dir)
+
