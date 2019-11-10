@@ -169,8 +169,6 @@ def GameSystem(skill_2_damage=2, skill_wait_time=1.0):
     global blood_effect_p0, blood_effect_p1
     global wait_time
 
-    
-
     if (time.time() - wait_time) >= skill_wait_time:
         ############################# p0 看 p1 #############################
         if status_data_p0[0] == b'1'[0]:        # 如果 p0 被技能(SK2)打到
@@ -210,47 +208,38 @@ def GameSystem(skill_2_damage=2, skill_wait_time=1.0):
             else:                               # 如果 p1 有 做防禦動作
                 defense_skill_2_p1 = 1
             wait_time = time.time()
+        elif status_data_p1[2] == b'1'[0]:      # 如果 p1 被技能(SK3)打到
+            if holo_action_p1 != 9:
+                blood_effect_p1 = 1
+                gamepoint_p1 -= skill_2_damage
+            else:
+                defense_skill_2_p1 = 1
+            wait_time = time.time()
+        elif status_data_p1[4] == b'1'[0]:      # 如果 p1 被技能(SK4)打到
+            if holo_action_p1 != 10:
+                blood_effect_p1 = 1
+                gamepoint_p1 -= skill_2_damage
+            else:
+                defense_skill_2_p1 = 1
+            wait_time = time.time()
+        elif status_data_p1[6] == b'1'[0]:      # 如果 p1 被技能(SK5)打到
+            if holo_action_p1 != 11:
+                blood_effect_p1 = 1
+                gamepoint_p1 -= skill_2_damage
+            else:
+                defense_skill_2_p1 = 1
+            wait_time = time.time()
             
-            
-    
-    ############################# 遊戲結束，結算，reset #############################
-    '''
+    ############################# 遊戲結束 #############################
     if gamepoint_p0 == 0:
         print('p0 lose, p1 win')
         p0_win_lose = 2     # p0 lose
         p1_win_lose = 1     # p1 win
-        time.sleep(0.5)
-        blood_effect_p0 = 0 # init
-        # ------------ reset data ------------ #
-        p0_win_lose = 0
-        p1_win_lose = 0
-        gamepoint_p0 = 10
-        gamepoint_p1 = 10
-        holo_action_p0 = 1
-        holo_action_p1 = 1
-        global_action_p0 = 1
-        global_action_p1 = 1
-        print('---------- Game system ready ----------')
-        time.sleep(1)
-        
     elif gamepoint_p1 == 0:
         print('p0 win, p1 lose')
         p0_win_lose = 1     # p0 lose
         p1_win_lose = 2     # p1 win
-        time.sleep(0.5)
-        blood_effect_p1 = 0 # init
-        # ------------ reset data ------------ #
-        p0_win_lose = 0
-        p1_win_lose = 0
-        gamepoint_p0 = 10
-        gamepoint_p1 = 10
-        holo_action_p0 = 1
-        holo_action_p1 = 1
-        global_action_p0 = 1
-        global_action_p1 = 1
-        print('---------- Game system ready ----------')
-        time.sleep(1)
-    '''
+
 
 class TServer(threading.Thread):
     def __init__(self, socket, adr, count=1, action=0, fps_time=0):
@@ -504,22 +493,6 @@ class TServer(threading.Thread):
                 if no_human == 1:      # if no human
                     holo_action_p0 = 1
                     holo_action_p1 = 1
-                    # if player == 'P0':
-                    #     if global_action_p1 == 2:
-                    #         temp_global_cou_p1 += 1
-                    #     else:
-                    #         temp_global_cou_p1 = 0
-                    #     if temp_global_cou_p1 > 10:
-                    #         global_action_p1 = 3
-                    #     holo_action_p1 = global_action_p1
-                    # elif player == 'P1':
-                    #     if global_action_p0 == 2:
-                    #         temp_global_cou_p0 += 1
-                    #     else:
-                    #         temp_global_cou_p0 = 0
-                    #     if temp_global_cou_p0 > 10:
-                    #         global_action_p0 = 3
-                    #     holo_action_p0 = global_action_p0
                 else:
                     if player == 'P0':
                         holo_action_p1 = self.action
@@ -537,7 +510,7 @@ class TServer(threading.Thread):
                 if status_data_p1[10] == b'1'[0]:
                     holo_action_p0 = 1
 
-            GameSystem(skill_2_damage=1, skill_wait_time=1.0)
+            GameSystem(skill_2_damage=2, skill_wait_time=1.0)
 
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
@@ -546,10 +519,21 @@ class TServer(threading.Thread):
             co_str = bytes(co_str, 'ascii')
             co_str = co_str + b',' + status_data_p0 + b',' + status_data_p1
 
-            blood_effect_p0 = 0         # init
-            defense_skill_2_p0 = 0      # init
-            blood_effect_p1 = 0         # init
-            defense_skill_2_p1 = 0      # init
+            # ------------ reset data ------------ #
+            blood_effect_p0 = 0
+            defense_skill_2_p0 = 0
+            blood_effect_p1 = 0
+            defense_skill_2_p1 = 0
+            if gamepoint_p0 == 0 or gamepoint_p1 == 0:       # 遊戲結束 reset
+                p0_win_lose = 0
+                p1_win_lose = 0
+                gamepoint_p0 = 10
+                gamepoint_p1 = 10
+                holo_action_p0 = 1
+                holo_action_p1 = 1
+                global_action_p0 = 1
+                global_action_p1 = 1
+                print('---------- Game system ready ----------')
 
             ####################### for unity_demo img_data #######################
             if player == 'P0':

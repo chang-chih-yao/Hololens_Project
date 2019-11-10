@@ -292,8 +292,6 @@ public class VideoPanelApp : MonoBehaviour
 
     private IEnumerator Lose_Game()
     {
-        end_game_flag = true;
-
         status = replace_char(status, 10, "1");
 
         My_Line.Draw_skeleton = false;
@@ -317,14 +315,10 @@ public class VideoPanelApp : MonoBehaviour
         My_Line.Draw_skeleton = true;
 
         status = replace_char(status, 10, "0");
-
-        end_game_flag = false;
     }
 
     private IEnumerator Win_Game()
     {
-        end_game_flag = true;
-
         status = replace_char(status, 10, "1");
 
         My_Line.Draw_skeleton = false;
@@ -348,8 +342,6 @@ public class VideoPanelApp : MonoBehaviour
         My_Line.Draw_skeleton = true;
 
         status = replace_char(status, 10, "0");
-
-        end_game_flag = false;
     }
 
     private string replace_char(string s, int index, string p)
@@ -574,12 +566,12 @@ public class VideoPanelApp : MonoBehaviour
 
             if (player == "holo_P0")
             {
-                if (p0_win_lose == 2 && end_game_flag == false)      // lose
+                /*if (p0_win_lose == 2 && end_game_flag == false)      // lose
                     StartCoroutine(Lose_Game());
                 else if (p0_win_lose == 1 && end_game_flag == false)  // win
                     StartCoroutine(Win_Game());
 
-                /*if (defense_skill_2_p0 == 1 && defense_animation == false)
+                if (defense_skill_2_p0 == 1 && defense_animation == false)
                 {
                     animation_flag = true;
                     defense_animation = true;
@@ -738,9 +730,14 @@ public class VideoPanelApp : MonoBehaviour
                             action = holo_action_p1;
                             my_action = holo_action_p0;
                             debug_4.text = arr[47] + "," + arr[48] + "," + arr[49] + "," + arr[50] + "," + arr[51] + "," + arr[52];
-                            if (arr[47] == "1"){
+                            if (arr[47] == "1"){                          // arr[47] is status[0]
                                 status = replace_char(status, 0, "0");
                             }
+
+                            if (p0_win_lose == 2)      // lose
+                                StartCoroutine(Lose_Game());
+                            else if (p0_win_lose == 1)  // win
+                                StartCoroutine(Win_Game());
 
                             if (defense_skill_2_p0 == 1) {
                                 animation_flag = true;
