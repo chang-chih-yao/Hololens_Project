@@ -360,10 +360,17 @@ class TServer(threading.Thread):
         global co_str_cp
 
         images = list()
-        fps_array = list()              # FSP sliding window
-        avg_fps = 15.0
-        for i in range(5):              # sliding window size = 5
+
+        final_action = 0
+
+        action_window = list()          # action sliding window
+        for i in range(3):                 # sliding window size = 3
+            action_window.append(1)
+
+        fps_array = list()                 # FSP sliding window
+        for i in range(5):                 # sliding window size = 5
             fps_array.append(15.0)
+        avg_fps = 15.0
 
         ################### for debug ###################
         # temp_cou = 0
@@ -377,7 +384,6 @@ class TServer(threading.Thread):
 
 
         while(True):
-
             no_human = 0   # no human flag
             data = b''
             try:
@@ -490,27 +496,73 @@ class TServer(threading.Thread):
 
                 del images[0]
 
-                if no_human == 1:      # if no human
+                if no_human == 1:                                          # if no human
                     holo_action_p0 = 1
                     holo_action_p1 = 1
+                    del action_window[0]
+                    action_window.append(1)
+                elif (player == 'P0' and status_data_p0[10] == b'1'[0]):   # HoloLens那端已經進入end game畫面
+                    holo_action_p1 = 1                                     # 遊戲 reset 階段辨識到的動作一率為 no action(1)
+                    del action_window[0]
+                    action_window.append(1)
+                elif (player == 'P1' and status_data_p1[10] == b'1'[0]):
+                    holo_action_p0 = 1
+                    del action_window[0]
+                    action_window.append(1)
                 else:
+                    del action_window[0]
+
+                    if (final_action == 2):                               # 如果上一個動作 是 螺旋丸的 start
+                        if (self.action == 2 or self.action == 3):        # 如果現在的動作 是 螺旋丸的 start 或是 螺旋丸的 end
+                            action_window.append(self.action)
+                        elif (top2 == 2 or top2 == 3):
+                            action_window.append(top2)
+                        elif (top3 == 2 or top3 == 3):
+                            action_window.append(top3)
+                        else:
+                            action_window.append(self.action)
+                    elif (final_action == 5):                             # 如果上一個動作 是 歸派氣功的 start
+                        if (self.action == 5 or self.action == 6):        # 如果現在的動作 是 歸派氣功的 start 或是 螺旋丸的 end
+                            action_window.append(self.action)
+                        elif (top2 == 5 or top2 == 6):
+                            action_window.append(top2)
+                        elif (top3 == 5 or top3 == 6):
+                            action_window.append(top3)
+                        else:
+                            action_window.append(self.action)
+                    else:
+                        action_window.append(self.action)
+
+                    temp = np.array([], np.int32)
+                    for i in range(num_class + 1):                        # 因為 action 從 1 開始，而非 0，這樣後面取argmax的值才會正確
+                        temp = np.append(temp, action_window.count(i))
+                    
+                    final_action = np.argmax(temp)
+
                     if player == 'P0':
-                        holo_action_p1 = self.action
+                        holo_action_p1 = final_action
                     elif player == 'P1':
-                        holo_action_p0 = self.action
-                        
+                        holo_action_p0 = final_action
+
+                #print(action_window)
+
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
-                
 
-            if player == 'P0':
-                if status_data_p0[10] == b'1'[0]:     # HoloLens那端已經進入end game畫面
-                    holo_action_p1 = 1               # 遊戲 reset 階段辨識到的動作一率為 no action(1)
-            elif player == 'P1':
-                if status_data_p1[10] == b'1'[0]:
-                    holo_action_p0 = 1
+            # if player == 'P0':
+            #     if status_data_p0[10] == b'1'[0]:     # HoloLens那端已經進入end game畫面
+            #         holo_action_p1 = 1                # 遊戲 reset 階段辨識到的動作一率為 no action(1)
+            #         del action_window[0]
+            #         action_window.append(1)
+            # elif player == 'P1':
+            #     if status_data_p1[10] == b'1'[0]:
+            #         holo_action_p0 = 1
+            #         del action_window[0]
+            #         action_window.append(1)
 
-            GameSystem(skill_2_damage=2, skill_wait_time=1.0)
+
+            GameSystem(skill_2_damage=5, skill_wait_time=1.0)    # 經過gamesystem判定
+
 
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
@@ -550,7 +602,6 @@ class TServer(threading.Thread):
                 self.run_holo_reset()
                 break
 
-            
             self.count += 1
 
             if cv2.waitKey(1) == 27:

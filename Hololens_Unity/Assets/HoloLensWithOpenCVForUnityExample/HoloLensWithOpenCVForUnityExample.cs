@@ -71,16 +71,23 @@ namespace HoloLensWithOpenCVForUnityExample
             verticalNormalizedPosition = scrollRect.verticalNormalizedPosition;
         }
 
-        public void OnSetIP_Click()
-        {
-            LoadScene("SetIP");
-        }
-
         public void OnStartGame_Click()
         {
             if (Game_Stats.IP != "None")
                 LoadScene(2);
         }
+        public void OnSetIP_Click()
+        {
+            LoadScene("SetIP");
+        }
+        public void On_Tutorial_Click()
+        {
+            LoadScene("Tutorial_Video");
+        }
+
+
+
+
 
         public void OnShowLicenseButtonClick ()
         {

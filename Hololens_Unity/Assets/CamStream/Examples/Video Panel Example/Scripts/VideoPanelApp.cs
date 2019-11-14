@@ -51,9 +51,9 @@ public class VideoPanelApp : MonoBehaviour
     private Boolean connect = false;
     private Boolean animation_flag = false;
     private Boolean SK2_animation = false;
-    private Boolean SK2_fail_flag = false;
+    //private Boolean SK2_fail_flag = false;
     private Boolean my_SK2_animation = false;
-    private Boolean my_SK2_fail_flag = false;
+    //private Boolean my_SK2_fail_flag = false;
     private Boolean blood_animation = false;
     private Boolean defense_animation = false;
     private Boolean failed_attack_animation = false;
@@ -488,7 +488,6 @@ public class VideoPanelApp : MonoBehaviour
                 if (action == 2)
                 {
                     Skill_2.SetActive(true);
-                    SK2_fail_flag = false;
                     if (Joints_co[2] != 0 || Joints_co[3] != 0)         // 有人，(Neck_x,Neck_y)=(0,0)我們訂為沒偵測到人
                     {
                         if (Joints_co[8] != 0f || Joints_co[9] != 0f)   // 右手有偵測到才去改Skill 2的動畫位置，(RWrist_x,RWrist_y)=(0,0)代表沒偵測到
@@ -496,12 +495,6 @@ public class VideoPanelApp : MonoBehaviour
                             Skill_2.GetComponent<Transform>().localPosition = Skill_2_coordinate_trans(Joints_co[8], Joints_co[9], Joints_co[6], Joints_co[7]);  //RWrist
                         }
                     }
-
-                    /*Skill_1.GetComponent<RectTransform>().localPosition = new Vector3(-40f, 30f, 0f);
-                    Skill_3.GetComponent<RectTransform>().localPosition = new Vector3(-40f, 30f, 0f);
-                    Skill_4.GetComponent<RectTransform>().localPosition = new Vector3(-40f, 30f, 0f);
-                    Skill_5.GetComponent<RectTransform>().localPosition = new Vector3(-40f, 30f, 0f);
-                    Skill_6.GetComponent<RectTransform>().localPosition = new Vector3(-40f, 30f, 0f);*/
                 }
                 else if (action == 3)
                 {
@@ -519,23 +512,13 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 else   // 其餘的action
                 {
-                    if (SK2_fail_flag)                    // 如果是true，代表已經連續兩個frame的action都不是action2，但上上個frame是action2
-                    {
-                        Skill_2.SetActive(false);         // 此時我們就判定 現在動作不是action2
-                        SK2_fail_flag = false;
-                    }
-                    else                                  // 代表此時不是action2
-                    {
-                        if (Skill_2.activeSelf == true)   // 代表此時不是action2，但上一個frame是action2，代表目前只有錯一個frame而已
-                            SK2_fail_flag = true;
-                    }
+                    Skill_2.SetActive(false);
                 }
 
 
                 if (my_action == 2)
                 {
                     my_Skill_2.SetActive(true);
-                    my_SK2_fail_flag = false;
                     my_Skill_2.GetComponent<Transform>().localPosition = new Vector3(100f, 0f, 0f);
                 }
                 else if (my_action == 3)
@@ -550,50 +533,11 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 else
                 {
-                    if (my_SK2_fail_flag)                    // 如果是true，代表已經連續兩個frame的action都不是action2，但上上個frame是action2
-                    {
-                        my_Skill_2.SetActive(false);         // 此時我們就判定 現在動作不是action2
-                        my_SK2_fail_flag = false;
-                    }
-                    else                                  // 代表此時不是action2
-                    {
-                        if (my_Skill_2.activeSelf == true)   // 代表此時不是action2，但上一個frame是action2，代表目前只有錯一個frame而已
-                            my_SK2_fail_flag = true;
-                    }
+                    my_Skill_2.SetActive(false);
                 }
             }
 
-
-            if (player == "holo_P0")
-            {
-                /*if (p0_win_lose == 2 && end_game_flag == false)      // lose
-                    StartCoroutine(Lose_Game());
-                else if (p0_win_lose == 1 && end_game_flag == false)  // win
-                    StartCoroutine(Win_Game());
-
-                if (defense_skill_2_p0 == 1 && defense_animation == false)
-                {
-                    animation_flag = true;
-                    defense_animation = true;
-                    successful_defense.SetActive(true);
-                    defense_time = Time.time;
-                }
-                else if (defense_skill_2_p1 == 1 && defense_animation == false)
-                {
-                    animation_flag = true;
-                    failed_attack_animation = true;
-                    failed_attack.SetActive(true);
-                    failed_attack_time = Time.time;
-                }
-
-                if (blood_effect_p0 == 1 && blood_animation == false)
-                {
-                    animation_flag = true;
-                    blood_animation = true;
-                    blood.color = new Color(blood.color.r, blood.color.g, blood.color.b, 1f);
-                }*/
-            }
-            else if (player == "holo_P1")
+            if (player == "holo_P1")
             {
                 if (p1_win_lose == 2 && end_game_flag == false)      // lose
                     StartCoroutine(Lose_Game());
@@ -734,9 +678,9 @@ public class VideoPanelApp : MonoBehaviour
                                 status = replace_char(status, 0, "0");
                             }
 
-                            if (p0_win_lose == 2)      // lose
+                            if (p0_win_lose == 2)                         // lose
                                 StartCoroutine(Lose_Game());
-                            else if (p0_win_lose == 1)  // win
+                            else if (p0_win_lose == 1)                    // win
                                 StartCoroutine(Win_Game());
 
                             if (defense_skill_2_p0 == 1) {
@@ -763,6 +707,7 @@ public class VideoPanelApp : MonoBehaviour
                             my_action = holo_action_p1;
                         }
     
+
                         frame_ready = 1;
                     
                         fps = 10000000.0 / (System.Diagnostics.Stopwatch.GetTimestamp() - local_fps);
