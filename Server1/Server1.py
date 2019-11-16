@@ -8,6 +8,7 @@ import logging
 import datetime
 import shutil
 import os
+from enum import Enum
 
 import tensorflow as tf
 
@@ -75,6 +76,19 @@ action_label -> action_name
 10 -> 9         (防禦肆之型) 體操?
 11 -> 10        (防禦伍之型) 結印
 '''
+
+class Skill(Enum):          # 9 actions 11 classes
+    No_action = 1
+    ATK_1_start = 2
+    ATK_1_end = 3
+    ATK_2 = 4
+    ATK_3_start = 5
+    ATK_3_end = 6
+    ATK_4 = 7
+    DEF_1 = 8
+    DEF_2 = 9
+    DEF_3 = 10
+    DEF_4 = 11
 
 ################################### OpenPose ###########################################
 gpu_options = tf.GPUOptions(allow_growth=True)
@@ -264,14 +278,14 @@ class TServer(threading.Thread):
         self.kalman_RElbow.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
         self.kalman_RElbow.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
         self.kalman_RElbow.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * 1e-4
-        self.kalman_RElbow.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.04
+        self.kalman_RElbow.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.01
         self.kalman_RElbow.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
 
         self.kalman_RWrist = cv2.KalmanFilter(4,2)
         self.kalman_RWrist.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
         self.kalman_RWrist.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
         self.kalman_RWrist.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * 1e-4
-        self.kalman_RWrist.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.04
+        self.kalman_RWrist.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.01
         self.kalman_RWrist.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
 
         self.ori_RElbow = np.array([[0],[0]],np.float32)
@@ -365,7 +379,7 @@ class TServer(threading.Thread):
 
         action_window = list()          # action sliding window
         for i in range(3):                 # sliding window size = 3
-            action_window.append(1)
+            action_window.append(Skill.No_action.value)
 
         fps_array = list()                 # FSP sliding window
         for i in range(5):                 # sliding window size = 5
@@ -497,36 +511,36 @@ class TServer(threading.Thread):
                 del images[0]
 
                 if no_human == 1:                                          # if no human
-                    holo_action_p0 = 1
-                    holo_action_p1 = 1
+                    holo_action_p0 = Skill.No_action.value
+                    holo_action_p1 = Skill.No_action.value
                     del action_window[0]
-                    action_window.append(1)
+                    action_window.append(Skill.No_action.value)
                 elif (player == 'P0' and status_data_p0[10] == b'1'[0]):   # HoloLens那端已經進入end game畫面
-                    holo_action_p1 = 1                                     # 遊戲 reset 階段辨識到的動作一率為 no action(1)
+                    holo_action_p1 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 no action(1)
                     del action_window[0]
-                    action_window.append(1)
+                    action_window.append(Skill.No_action.value)
                 elif (player == 'P1' and status_data_p1[10] == b'1'[0]):
-                    holo_action_p0 = 1
+                    holo_action_p0 = Skill.No_action.value
                     del action_window[0]
-                    action_window.append(1)
+                    action_window.append(Skill.No_action.value)
                 else:
                     del action_window[0]
 
-                    if (final_action == 2):                               # 如果上一個動作 是 螺旋丸的 start
-                        if (self.action == 2 or self.action == 3):        # 如果現在的動作 是 螺旋丸的 start 或是 螺旋丸的 end
+                    if (final_action == Skill.ATK_1_start.value):                                            # 如果上一個動作 是 螺旋丸的 start
+                        if (self.action == Skill.ATK_1_start.value or self.action == Skill.ATK_1_end.value): # 如果現在的動作 是 螺旋丸的 start 或是 螺旋丸的 end
                             action_window.append(self.action)
-                        elif (top2 == 2 or top2 == 3):
+                        elif (top2 == Skill.ATK_1_start.value or top2 == Skill.ATK_1_end.value):
                             action_window.append(top2)
-                        elif (top3 == 2 or top3 == 3):
+                        elif (top3 == Skill.ATK_1_start.value or top3 == Skill.ATK_1_end.value):
                             action_window.append(top3)
                         else:
                             action_window.append(self.action)
-                    elif (final_action == 5):                             # 如果上一個動作 是 歸派氣功的 start
-                        if (self.action == 5 or self.action == 6):        # 如果現在的動作 是 歸派氣功的 start 或是 螺旋丸的 end
+                    elif (final_action == Skill.ATK_3_start.value):                                          # 如果上一個動作 是 歸派氣功的 start
+                        if (self.action == Skill.ATK_3_start.value or self.action == Skill.ATK_3_end.value): # 如果現在的動作 是 歸派氣功的 start 或是 螺旋丸的 end
                             action_window.append(self.action)
-                        elif (top2 == 5 or top2 == 6):
+                        elif (top2 == Skill.ATK_3_start.value or top2 == Skill.ATK_3_end.value):
                             action_window.append(top2)
-                        elif (top3 == 5 or top3 == 6):
+                        elif (top3 == Skill.ATK_3_start.value or top3 == Skill.ATK_3_end.value):
                             action_window.append(top3)
                         else:
                             action_window.append(self.action)
@@ -581,10 +595,10 @@ class TServer(threading.Thread):
                 p1_win_lose = 0
                 gamepoint_p0 = 10
                 gamepoint_p1 = 10
-                holo_action_p0 = 1
-                holo_action_p1 = 1
-                global_action_p0 = 1
-                global_action_p1 = 1
+                holo_action_p0 = Skill.No_action.value
+                holo_action_p1 = Skill.No_action.value
+                global_action_p0 = Skill.No_action.value
+                global_action_p1 = Skill.No_action.value
                 print('---------- Game system ready ----------')
 
             ####################### for unity_demo img_data #######################

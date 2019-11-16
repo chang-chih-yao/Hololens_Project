@@ -69,12 +69,15 @@ public class VideoPanelApp : MonoBehaviour
     public Image P0_HP;
     public Image P1_HP;
 
-    public Text Skill_1;
-    //public Image Skill_2;
-    public Text Skill_3;
-    public Text Skill_4;
-    public Text Skill_5;
-    public Text Skill_6;
+    public GameObject Skill_Ref;
+    public GameObject Atk_1;
+    public GameObject Def_1;
+
+    private GameObject skill_temp;
+    private GameObject my_skill_temp;
+    private Rasengan rasengan;
+    private MagicCircle magicCircle;
+
     public GameObject Skill_2;
     public GameObject my_Skill_2;
     public GameObject panel;
@@ -420,12 +423,21 @@ public class VideoPanelApp : MonoBehaviour
             {
                 if (SK2_animation)
                 {
-                    float SK2_x = Skill_2.GetComponent<Transform>().localPosition.x;
-                    float SK2_y = Skill_2.GetComponent<Transform>().localPosition.y;
-                    float SK2_z = Skill_2.GetComponent<Transform>().localPosition.z;
-                    SK2_x = SK2_x - SK2_reduce_x;
-                    SK2_y = SK2_y - SK2_reduce_y;
-                    SK2_z = SK2_z - SK2_reduce_z;
+                    Skill_Ref.GetComponent<Transform>().position = Vector3.MoveTowards(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 0f), 2f);
+                    rasengan.setPosition(Skill_Ref.GetComponent<Transform>().position);
+                    if (Skill_Ref.GetComponent<Transform>().position.z < 5f)
+                    {
+                        rasengan.finish(0.1f);
+                        Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, 0f);
+                        status = replace_char(status, 0, "1");
+                        status_s2_hit_time = Time.time;
+                        animation_flag = false;
+                        SK2_animation = false;
+                    }
+                    /*
+                    float SK2_x = Skill_2.GetComponent<Transform>().localPosition.x - SK2_reduce_x;
+                    float SK2_y = Skill_2.GetComponent<Transform>().localPosition.y - SK2_reduce_y;
+                    float SK2_z = Skill_2.GetComponent<Transform>().localPosition.z - SK2_reduce_z;
                     Skill_2.GetComponent<Transform>().localPosition = new Vector3(SK2_x, SK2_y, SK2_z);
                     
                     if (SK2_z <= SK2_limit)
@@ -437,6 +449,7 @@ public class VideoPanelApp : MonoBehaviour
                         Skill_2.GetComponent<Transform>().localPosition = new Vector3(40f, 0f, 0f);
                         Skill_2.SetActive(false);
                     }
+                    */
                 }
                 if (blood_animation)
                 {
@@ -485,8 +498,27 @@ public class VideoPanelApp : MonoBehaviour
             }
             else
             {
+                // **************************** 對手的 action **************************** //
                 if (action == 2)
                 {
+                    if (skill_temp == null)
+                    {
+                        skill_temp = Instantiate(Atk_1);
+                        rasengan = skill_temp.GetComponent<Rasengan>();
+                        rasengan.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), 0.5f);
+                    }
+                    else
+                    {
+                        if (Joints_co[2] != 0 || Joints_co[3] != 0)         // 有人，(Neck_x,Neck_y)=(0,0)我們訂為沒偵測到人
+                        {
+                            if (Joints_co[8] != 0f || Joints_co[9] != 0f)   // 右手有偵測到才去改Skill 2的動畫位置，(RWrist_x,RWrist_y)=(0,0)代表沒偵測到
+                            {
+                                Skill_Ref.GetComponent<Transform>().localPosition = Skill_2_coordinate_trans(Joints_co[8], Joints_co[9], Joints_co[6], Joints_co[7]);
+                                rasengan.setPosition(Skill_Ref.GetComponent<Transform>().position);
+                            }
+                        }
+                    }
+                    /*
                     Skill_2.SetActive(true);
                     if (Joints_co[2] != 0 || Joints_co[3] != 0)         // 有人，(Neck_x,Neck_y)=(0,0)我們訂為沒偵測到人
                     {
@@ -495,9 +527,16 @@ public class VideoPanelApp : MonoBehaviour
                             Skill_2.GetComponent<Transform>().localPosition = Skill_2_coordinate_trans(Joints_co[8], Joints_co[9], Joints_co[6], Joints_co[7]);  //RWrist
                         }
                     }
+                    */
                 }
                 else if (action == 3)
                 {
+                    if (skill_temp != null)
+                    {
+                        animation_flag = true;
+                        SK2_animation = true;
+                    }
+                    /*
                     if (Skill_2.activeSelf == true)
                     {
                         //Skill_2.GetComponent<Transform>().localPosition = joint_coordinate_trans(Joints_co[8], Joints_co[9]);  //RWrist
@@ -509,13 +548,20 @@ public class VideoPanelApp : MonoBehaviour
                         SK2_reduce_x = SK2_reduce_z / -SK2_limit * Skill_2.GetComponent<Transform>().localPosition.x;
                         SK2_reduce_y = SK2_reduce_z / -SK2_limit * Skill_2.GetComponent<Transform>().localPosition.y;
                     }
+                    */
                 }
                 else   // 其餘的action
                 {
                     Skill_2.SetActive(false);
+                    if (skill_temp != null)
+                    {
+                        rasengan.finish(0.1f);
+                        Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, 0f);
+                    }
                 }
 
 
+                // **************************** 自己的 action **************************** //
                 if (my_action == 2)
                 {
                     my_Skill_2.SetActive(true);
