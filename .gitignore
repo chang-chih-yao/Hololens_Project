@@ -108,6 +108,12 @@ ENV/
 *.npy
 timeline*.json
 
+# MacOS ignore
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
 # Server1 debug
 Server1/debug
 
