@@ -4,7 +4,12 @@ using UnityEngine;
 
 public class Skill : MonoBehaviour
 {
+    protected bool alive = false;
     public virtual void ready(Vector3 position, Vector3 forward, float duration){
+
+    }
+
+    public virtual void ready(Vector3 position, Vector3 forward, float duration, float size){
 
     }
 
@@ -14,5 +19,9 @@ public class Skill : MonoBehaviour
 
     public virtual void finish(float duration){
         
+    }
+
+    public bool isAlive(){
+        return alive;
     }
 }

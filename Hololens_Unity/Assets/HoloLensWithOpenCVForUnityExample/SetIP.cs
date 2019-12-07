@@ -6,14 +6,23 @@ namespace HoloLensWithOpenCVForUnityExample
 {
     public class SetIP : ExampleSceneBase
     {
-        private string s = "192.168.";
+        private string s;
         public Text IP;
         public Text Player;
+        public Text Enter_text;
         // Use this for initialization
         protected override void Start ()
         {
             base.Start ();
+
+            s = Game_Stats.IP;
             IP.text = s;
+            if (Game_Stats.PlayerID == "holo_P0")
+                Player.text = "P0";
+            else if (Game_Stats.PlayerID == "holo_P1")
+                Player.text = "P1";
+            else
+                Player.text = "Choose Player";
         }
         
         // Update is called once per frame
@@ -98,19 +107,27 @@ namespace HoloLensWithOpenCVForUnityExample
 
         public void On_Enter_Click()
         {
-            string[] arr = s.Split('.');
-            if (arr.Length == 4)
+            if(Enter_text.text == "Tyep Error")
             {
-                if (Game_Stats.PlayerID != "None")
-                {
-                    Game_Stats.IP = s;
-                    LoadScene("HoloLensWithOpenCVForUnityExample");
-                }
+                Enter_text.text = "Enter";
+                Enter_text.color = Color.black;
             }
             else
             {
-                s = "Please input correct IP address";
-                IP.text = s;
+                string[] arr = s.Split('.');
+                if (arr.Length == 4)
+                {
+                    if (Game_Stats.PlayerID != "None")
+                    {
+                        Game_Stats.IP = s;
+                        LoadScene("HoloLensWithOpenCVForUnityExample");
+                    }
+                }
+                else
+                {
+                    Enter_text.text = "Tyep Error";
+                    Enter_text.color = Color.red;
+                }
             }
         }
 

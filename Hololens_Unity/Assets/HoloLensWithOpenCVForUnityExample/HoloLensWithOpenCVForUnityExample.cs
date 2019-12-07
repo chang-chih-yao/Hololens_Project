@@ -25,7 +25,7 @@ namespace HoloLensWithOpenCVForUnityExample
             s = s + ", IP : " + Game_Stats.IP;
             Start_Game.text = s;
 
-            exampleTitle.text = "HoloLensWithOpenCVForUnity Example " + Application.version;
+            exampleTitle.text = "HoloLens AR Game " + Application.version;
 
             versionInfo.text = Core.NATIVE_LIBRARY_NAME + " " + OpenCVForUnity.UnityUtils.Utils.getVersion() + " (" + Core.VERSION + ")";
             versionInfo.text += " / UnityEditor " + Application.unityVersion;
@@ -73,12 +73,16 @@ namespace HoloLensWithOpenCVForUnityExample
 
         public void OnStartGame_Click()
         {
-            if (Game_Stats.IP != "None")
+            if (Game_Stats.IP != "192.168.")
                 LoadScene(2);
         }
         public void OnSetIP_Click()
         {
             LoadScene("SetIP");
+        }
+        public void On_Setting_Click()
+        {
+            LoadScene("Setting");
         }
         public void On_Tutorial_Click()
         {
@@ -88,7 +92,7 @@ namespace HoloLensWithOpenCVForUnityExample
 
 
 
-
+        /*
         public void OnShowLicenseButtonClick ()
         {
             LoadScene ("ShowLicense");
@@ -123,5 +127,6 @@ namespace HoloLensWithOpenCVForUnityExample
         {
             LoadScene ("HoloLensArUcoCameraCalibrationExample");
         }
+        */
     }
 }

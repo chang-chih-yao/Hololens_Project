@@ -18,12 +18,12 @@ public class Orb : Skill
         {
             g.SetActive(false);
         }
-        Invoke("DisplayStableParticle",2);
+        Invoke("DisplayStableParticle",1.0f);
     }
 
 
     public override void finish(float duration){
-        
+        Destroy(this.gameObject);
     }
 
     private void DisplayStableParticle()

@@ -46,6 +46,16 @@ public class TestController : MonoBehaviour
 
                 break;
             case 1:
+                if(currentSkillState == SkillState.Ready && skill_temp == null){
+                    skill_temp = Instantiate(attack_orange); // attack1 alive
+                    orb = skill_temp.GetComponent<Orb>();
+                    orb.ready(transform.position, transform.forward, 1.0f, 2.0f);
+                    currentSkillState = SkillState.Stable;
+                }
+                else if(currentSkillState == SkillState.Finish && skill_temp != null){
+                    orb.finish(1.0f);
+                    currentSkillState = SkillState.Idle;
+                }
                 break;
             case 2:
                 break;
@@ -53,7 +63,7 @@ public class TestController : MonoBehaviour
                 if(currentSkillState == SkillState.Ready && skill_temp == null){
                     skill_temp = Instantiate(attack_purple); // attack1 alive
                     rasengan = skill_temp.GetComponent<Rasengan>();
-                    rasengan.ready(transform.position, transform.forward, 0.5f);
+                    rasengan.ready(transform.position, transform.forward, 1.0f, 1.0f);
                 }
                 else if(currentSkillState == SkillState.Stable && skill_temp != null){
                     // if(transform.position.z < 9.0f){
@@ -61,9 +71,8 @@ public class TestController : MonoBehaviour
                     //     rasengan.setPosition(transform.position);
                     // }
                 }
-                else if(currentSkillState == SkillState.Finish && skill_temp != null){
-                    rasengan.finish(0.5f);
-                    currentSkillState = SkillState.Idle;
+                else if(currentSkillState == SkillState.Finish && skill_temp != null && rasengan.isAlive() == true){
+                    rasengan.finish(1.0f);
                 }
 
                 break;
@@ -71,23 +80,50 @@ public class TestController : MonoBehaviour
                 if(currentSkillState == SkillState.Ready && skill_temp == null){
                     skill_temp = Instantiate(defense_red); // attack1 alive
                     magicCircle = skill_temp.GetComponent<MagicCircle>();
-                    magicCircle.ready(transform.position, transform.forward, 0.5f);
-                }
-                else if(currentSkillState == SkillState.Stable && skill_temp != null){
-                    //magicCircle.finish(transform.position);
+                    magicCircle.ready(transform.position, -transform.forward, 2.0f, 0.5f);
+                    currentSkillState = SkillState.Stable;
                 }
                 else if(currentSkillState == SkillState.Finish && skill_temp != null){
-                    magicCircle.finish(0.5f);
+                    magicCircle.finish(1.0f);
                     currentSkillState = SkillState.Idle;
                 }
-
                 break;
             case 5:
+                if(currentSkillState == SkillState.Ready && skill_temp == null){
+                    skill_temp = Instantiate(defense_orange); // attack1 alive
+                    magicCircle = skill_temp.GetComponent<MagicCircle>();
+                    magicCircle.ready(transform.position, transform.forward, 1.0f, 0.5f);
+                    currentSkillState = SkillState.Stable;
+                }
+                else if(currentSkillState == SkillState.Finish && skill_temp != null){
+                    magicCircle.finish(1.0f);
+                    currentSkillState = SkillState.Idle;
+                }
                 break;
             case 6:
+                if(currentSkillState == SkillState.Ready && skill_temp == null){
+                    skill_temp = Instantiate(defense_green); // attack1 alive
+                    magicCircle = skill_temp.GetComponent<MagicCircle>();
+                    magicCircle.ready(transform.position, transform.forward, 1.0f, 0.5f);
+                    currentSkillState = SkillState.Stable;
+                }
+                else if(currentSkillState == SkillState.Finish && skill_temp != null){
+                    magicCircle.finish(1.0f);
+                    currentSkillState = SkillState.Idle;
+                }
                 break;
             case 7:
-                break;                
+                if(currentSkillState == SkillState.Ready && skill_temp == null){
+                    skill_temp = Instantiate(defense_purple); // attack1 alive
+                    magicCircle = skill_temp.GetComponent<MagicCircle>();
+                    magicCircle.ready(transform.position, transform.forward, 1.0f, 0.5f);
+                    currentSkillState = SkillState.Stable;
+                }
+                else if(currentSkillState == SkillState.Finish && skill_temp != null){
+                    magicCircle.finish(1.0f);
+                    currentSkillState = SkillState.Idle;
+                }
+                break;
         }
         
         
@@ -120,10 +156,9 @@ public class TestController : MonoBehaviour
      public void controllerFinish(){
         currentSkillState = SkillState.Finish;
     }
-
-
     public void ChangeSkill(int Name)
     {
         currentSkill = Name;
     }
+
 }
