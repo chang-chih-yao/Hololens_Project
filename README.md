@@ -9,7 +9,7 @@
 
 ***
 
-## FlowChart
+## FlowChart and Scenario
 
 玩家穿戴 MR 眼鏡拍攝對手的肢體動作，透過wifi將影像傳送至運算伺服器，根據預訓練之深度類神經網路模型估測出對手的2D人體姿態與動作類別，根據目前做的動作類別，在定義好的骨架節點觸發相對應的特效，將觸發節點之位置與對應特效的資訊傳回AR眼鏡端，由眼鏡裝置繪製特效，產生虛實對應的AR效果。例如 "火影忍者" 當中許多 "忍術" 可以透過此方法把特效添加在真實人物上。
 
@@ -18,7 +18,11 @@
 
 ***
 
-![image](etcs/Flow_Chart2.JPG)
+![image](etcs/my_scene.png)
+
+***
+
+![image](etcs/Scenario.png)
 
 ***
 
@@ -26,15 +30,11 @@
 
 ***
 
-## Server1 & Hololens
-
-![image](etcs/1.png)
-
 ### 例如螺旋丸：  
-![image](etcs/4.gif)
+![image](etcs/2.gif)
 
 ### 在Hololens眼鏡裡面就會看到這樣：  
-![image](etcs/3.JPG)
+![image](etcs/3D_panel_demo.jpg)
 
 ***
 
@@ -123,6 +123,8 @@ Version：
 - pytorch 0.4.1
 - torchvision 0.2.1
 
+***
+
 ## Pose Estimation Network
 
 [OpenPose using Tensorflow](https://github.com/ildoonet/tf-pose-estimation)
@@ -132,3 +134,12 @@ Version：
 ## Action Recognition Network
 
 [TSN using PyTorch](https://github.com/yjxiong/tsn-pytorch)
+
+***
+
+## Quick Start
+
+如果是要搭建沒有 outside camera 的系統，總共需要有一台電腦 + 一台或是兩台HoloLens，PC端運行Server1.py，接著開啟HoloLnes內的程式進行連接。
+
+Server1 的環境搭建 : [Server1 Setup](Server1/README.md)
+HoloLens APP Installation : [HoloLens Setup](Hololens_Unity/README.md)
