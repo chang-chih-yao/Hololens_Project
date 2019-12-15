@@ -141,6 +141,6 @@ Version：
 
 如果是要搭建沒有 outside camera 的系統，總共需要有一台電腦 + 一台或是兩台HoloLens，PC端運行Server1.py，接著開啟HoloLnes內的程式進行連接。
 
-Server1 的環境搭建 : [Server1 Setup](Server1/README.md)
+Server1 Environment Setup : [Server1 Setup](Server1/README.md)
 
 HoloLens APP Installation : [HoloLens Setup](Hololens_Unity/README.md)
