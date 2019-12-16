@@ -143,20 +143,30 @@ p0_win_lose = 0       # 1->win, 2->lose
 p1_win_lose = 0       # 1->win, 2->lose
 holo_action_p0 = 0
 holo_action_p1 = 0
-def_p0 = 0            # p1 攻擊 p0 時，p0 有無防禦成功
-def_p1 = 0
-blood_effect_p0 = 0
-blood_effect_p1 = 0
-wait_time = 0.0
+# def_p0 = 0            # p1 攻擊 p0 時，p0 有無防禦成功
+# def_p1 = 0
+# blood_effect_p0 = 0
+# blood_effect_p1 = 0
+
+my_def_fail_p0 = 0
+my_def_succ_p0 = 0
+def_fail_p0 = 0
+def_succ_p0 = 0
+
+my_def_fail_p1 = 0
+my_def_succ_p1 = 0
+def_fail_p1 = 0
+def_succ_p1 = 0
+
+wait_time_p0 = 0.0
+wait_time_p1 = 0.0
 
 status_data_p0 = b'0,0,0,0,0,0'    # status = "被對方的技能(ATK1)打到, 被對方的技能(ATK2)打到, 被對方的技能(ATK3)打到, 被對方的技能(ATK4)打到, end game, start new game"
 status_data_p1 = b'0,0,0,0,0,0'
 data_cp = b''
 frame_size_cp = None
 co_str_cp = ''
-
-temp_global_cou_p0 = 0
-temp_global_cou_p1 = 0
+player_count = 0
 
 
 def validate(model, rst):
@@ -172,86 +182,150 @@ def validate(model, rst):
     return output, pred
 
 
-def GameSystem(skill_damage=2, skill_wait_time=1.0, player='P0'):
+def GameSystem(skill_damage=2, skill_wait_time=0.5, player_='P0'):
     global gamepoint_p0, gamepoint_p1
     global p0_win_lose, p1_win_lose
     global holo_action_p0, holo_action_p1
     global global_action_p0, global_action_p1
-    global def_p0, def_p1
-    global blood_effect_p0, blood_effect_p1
-    global wait_time
+    global my_def_fail_p0, my_def_succ_p0, def_fail_p0, def_succ_p0
+    global my_def_fail_p1, my_def_succ_p1, def_fail_p1, def_succ_p1
+    global wait_time_p0, wait_time_p1
 
-    if (time.time() - wait_time) >= skill_wait_time:
+    
+    ############################# p0 看 p1 #############################
+    if (player_ == 'P0'):
+        if (time.time() - wait_time_p0) >= skill_wait_time:
+            ############################# p0 被打到 #############################
+            if status_data_p0[0] == b'1'[0]:                 # 如果 p0 被技能(ATK_1)打到
+                if holo_action_p0 != Skill.DEF_1.value:      # 如果 p0 沒 做防禦動作
+                    my_def_fail_p0 = 1                       # p0 受傷噴血的動畫，這個會透過socket傳給hololens
+                    gamepoint_p0 -= skill_damage             # 扣血
+                    #print('P0, 我方扣血')
+                else:                                        # 如果 p0 有 做防禦動作
+                    my_def_succ_p0 = 1                       # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
+                    #print('P0, 我方防禦成功')
+                wait_time_p0 = time.time()
+            elif status_data_p0[2] == b'1'[0]:               # 如果 p0 被技能(ATK_2)打到
+                if holo_action_p0 != Skill.DEF_2.value:
+                    my_def_fail_p0 = 1
+                    gamepoint_p0 -= skill_damage
+                else:
+                    my_def_succ_p0 = 1
+                wait_time_p0 = time.time()
+            elif status_data_p0[4] == b'1'[0]:               # 如果 p0 被技能(ATK_3)打到
+                if holo_action_p0 != Skill.DEF_3.value:
+                    my_def_fail_p0 = 1
+                    gamepoint_p0 -= skill_damage
+                else:
+                    my_def_succ_p0 = 1
+                wait_time_p0 = time.time()
+            elif status_data_p0[6] == b'1'[0]:               # 如果 p0 被技能(ATK_4)打到
+                if holo_action_p0 != Skill.DEF_4.value:
+                    my_def_fail_p0 = 1
+                    gamepoint_p0 -= skill_damage
+                else:
+                    my_def_succ_p0 = 1
+                wait_time_p0 = time.time()
         
-        ############################# p0 看 p1 #############################
-        if status_data_p0[0] == b'1'[0]:                 # 如果 p0 被技能(ATK_1)打到
-            if holo_action_p0 != Skill.DEF_1.value:      # 如果 p0 沒 做防禦動作
-                blood_effect_p0 = 1                      # p0 受傷噴血的動畫，這個會透過socket傳給hololens
-                gamepoint_p0 -= skill_damage             # 扣血
-            else:                                        # 如果 p0 有 做防禦動作
-                def_p0 = 1                               # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
-            wait_time = time.time()
-        elif status_data_p0[2] == b'1'[0]:               # 如果 p0 被技能(ATK_2)打到
-            if holo_action_p0 != Skill.DEF_2.value:
-                blood_effect_p0 = 1
-                gamepoint_p0 -= skill_damage
-            else:
-                def_p0 = 1
-            wait_time = time.time()
-        elif status_data_p0[4] == b'1'[0]:               # 如果 p0 被技能(ATK_3)打到
-            if holo_action_p0 != Skill.DEF_3.value:
-                blood_effect_p0 = 1
-                gamepoint_p0 -= skill_damage
-            else:
-                def_p0 = 1
-            wait_time = time.time()
-        elif status_data_p0[6] == b'1'[0]:               # 如果 p0 被技能(ATK_4)打到
-            if holo_action_p0 != Skill.DEF_4.value:
-                blood_effect_p0 = 1
-                gamepoint_p0 -= skill_damage
-            else:
-                def_p0 = 1
-            wait_time = time.time()
-       
-        ############################# p1 看 p0 #############################
-        if status_data_p1[0] == b'1'[0]:                 # 如果 p1 被技能(ATK_1)打到
-            if holo_action_p1 != Skill.DEF_1.value:      # 如果 p1 沒 做防禦動作
-                blood_effect_p1 = 1
-                gamepoint_p1 -= skill_damage
-            else:                                        # 如果 p1 有 做防禦動作
-                def_p1 = 1
-            wait_time = time.time()
-        elif status_data_p1[2] == b'1'[0]:               # 如果 p1 被技能(ATK_2)打到
-            if holo_action_p1 != Skill.DEF_2.value:
-                blood_effect_p1 = 1
-                gamepoint_p1 -= skill_damage
-            else:
-                def_p1 = 1
-            wait_time = time.time()
-        elif status_data_p1[4] == b'1'[0]:               # 如果 p1 被技能(ATK_3)打到
-            if holo_action_p1 != Skill.DEF_3.value:
-                blood_effect_p1 = 1
-                gamepoint_p1 -= skill_damage
-            else:
-                def_p1 = 1
-            wait_time = time.time()
-        elif status_data_p1[6] == b'1'[0]:               # 如果 p1 被技能(ATK_4)打到
-            if holo_action_p1 != Skill.DEF_4.value:
-                blood_effect_p1 = 1
-                gamepoint_p1 -= skill_damage
-            else:
-                def_p1 = 1
-            wait_time = time.time()
-            
+            ############################# p1 被打到 #############################
+            if status_data_p1[0] == b'1'[0]:                 # 如果 p1 被技能(ATK_1)打到
+                if holo_action_p1 != Skill.DEF_1.value:      # 如果 p1 沒 做防禦動作
+                    def_fail_p0 = 1
+                    #print('P0, 對方防禦失敗')
+                else:                                        # 如果 p1 有 做防禦動作
+                    def_succ_p0 = 1
+                    #print('P0, 對方防禦成功')
+                wait_time_p0 = time.time()
+            elif status_data_p1[2] == b'1'[0]:               # 如果 p1 被技能(ATK_2)打到
+                if holo_action_p1 != Skill.DEF_2.value:
+                    def_fail_p0 = 1
+                else:
+                    def_succ_p0 = 1
+                wait_time_p0 = time.time()
+            elif status_data_p1[4] == b'1'[0]:               # 如果 p1 被技能(ATK_3)打到
+                if holo_action_p1 != Skill.DEF_3.value:
+                    def_fail_p0 = 1
+                else:
+                    def_succ_p0 = 1
+                wait_time_p0 = time.time()
+            elif status_data_p1[6] == b'1'[0]:               # 如果 p1 被技能(ATK_4)打到
+                if holo_action_p1 != Skill.DEF_4.value:
+                    def_fail_p0 = 1
+                else:
+                    def_succ_p0 = 1
+                wait_time_p0 = time.time()
+    ############################# p1 看 p0 #############################
+    elif (player_ == 'P1'):
+        if (time.time() - wait_time_p1) >= skill_wait_time:
+            ############################# p0 被打到 #############################
+            if status_data_p0[0] == b'1'[0]:                 # 如果 p0 被技能(ATK_1)打到
+                if holo_action_p0 != Skill.DEF_1.value:      # 如果 p0 沒 做防禦動作
+                    def_fail_p1 = 1                          # p0 受傷噴血的動畫，這個會透過socket傳給hololens
+                    #print('P1, 對方防禦失敗')
+                else:                                        # 如果 p0 有 做防禦動作
+                    def_succ_p1 = 1                          # 成功防禦，這個會透過socket傳給hololens，顯示防禦特效
+                    #print('P1, 對方防禦成功')
+                wait_time_p1 = time.time()
+            elif status_data_p0[2] == b'1'[0]:               # 如果 p0 被技能(ATK_2)打到
+                if holo_action_p0 != Skill.DEF_2.value:
+                    def_fail_p1 = 1
+                else:
+                    def_succ_p1 = 1
+                wait_time_p1 = time.time()
+            elif status_data_p0[4] == b'1'[0]:               # 如果 p0 被技能(ATK_3)打到
+                if holo_action_p0 != Skill.DEF_3.value:
+                    def_fail_p1 = 1
+                else:
+                    def_succ_p1 = 1
+                wait_time_p1 = time.time()
+            elif status_data_p0[6] == b'1'[0]:               # 如果 p0 被技能(ATK_4)打到
+                if holo_action_p0 != Skill.DEF_4.value:
+                    def_fail_p1 = 1
+                else:
+                    def_succ_p1 = 1
+                wait_time_p1 = time.time()
+        
+            ############################# p1 被打到 #############################
+            if status_data_p1[0] == b'1'[0]:                 # 如果 p1 被技能(ATK_1)打到
+                if holo_action_p1 != Skill.DEF_1.value:      # 如果 p1 沒 做防禦動作
+                    my_def_fail_p1 = 1
+                    gamepoint_p1 -= skill_damage
+                    #print('P1, 我方扣血')
+                else:                                        # 如果 p1 有 做防禦動作
+                    my_def_succ_p1 = 1
+                    #print('P1, 我方防禦成功')
+                wait_time_p1 = time.time()
+            elif status_data_p1[2] == b'1'[0]:               # 如果 p1 被技能(ATK_2)打到
+                if holo_action_p1 != Skill.DEF_2.value:
+                    my_def_fail_p1 = 1
+                    gamepoint_p1 -= skill_damage
+                else:
+                    my_def_succ_p1 = 1
+                wait_time_p1 = time.time()
+            elif status_data_p1[4] == b'1'[0]:               # 如果 p1 被技能(ATK_3)打到
+                if holo_action_p1 != Skill.DEF_3.value:
+                    my_def_fail_p1 = 1
+                    gamepoint_p1 -= skill_damage
+                else:
+                    my_def_succ_p1 = 1
+                wait_time_p1 = time.time()
+            elif status_data_p1[6] == b'1'[0]:               # 如果 p1 被技能(ATK_4)打到
+                if holo_action_p1 != Skill.DEF_4.value:
+                    my_def_fail_p1 = 1
+                    gamepoint_p1 -= skill_damage
+                else:
+                    my_def_succ_p1 = 1
+                wait_time_p1 = time.time()
+
     ############################# 遊戲結束 #############################
-    if player == 'P0':
+    if player_ == 'P0':
         if gamepoint_p0 == 0:
             print('p0 lose')
             p0_win_lose = 2
         elif gamepoint_p1 == 0:
             print('p0 win')
             p0_win_lose = 1
-    elif player == 'P1':
+    elif player_ == 'P1':
         if gamepoint_p0 == 0:
             print('p1 win')
             p1_win_lose = 1
@@ -369,19 +443,19 @@ class TServer(threading.Thread):
         global gamepoint_p0, gamepoint_p1
         global p0_win_lose, p1_win_lose
         global holo_action_p0, holo_action_p1
-        global def_p0, def_p1
         global status_data_p0, status_data_p1
-        global blood_effect_p0, blood_effect_p1
+        global my_def_fail_p0, my_def_succ_p0, def_fail_p0, def_succ_p0
+        global my_def_fail_p1, my_def_succ_p1, def_fail_p1, def_succ_p1
 
-        global temp_global_cou_p0, temp_global_cou_p1
+        global player_count
 
         global frame_size_cp
         global data_cp
         global co_str_cp
 
         images = list()
-
         final_action = 0
+        player_count += 1
 
         action_window = list()          # action sliding window
         for i in range(3):                 # sliding window size = 3
@@ -516,72 +590,86 @@ class TServer(threading.Thread):
 
                 del images[0]
 
-                if no_human == 1:                                          # 若其中一位玩家沒看著對方
-                    # holo_action_p0 = global_action_p0
-                    # holo_action_p1 = global_action_p1
-                    holo_action_p0 = Skill.No_action.value
-                    holo_action_p1 = Skill.No_action.value
-                    del action_window[0]
-                    action_window.append(Skill.No_action.value)
-                elif (player == 'P0' and status_data_p0[10] == b'1'[0]):   # HoloLens 端 P0 已經進入end game畫面
-                    holo_action_p1 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
-                    del action_window[0]
-                    action_window.append(Skill.No_action.value)
-                elif (player == 'P1' and status_data_p1[10] == b'1'[0]):   # HoloLens 端 P1 已經進入end game畫面
-                    holo_action_p0 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
-                    del action_window[0]
-                    action_window.append(Skill.No_action.value)
-                else:
-                    del action_window[0]
+                # if no_human == 1:                                          # 若其中一位玩家沒看著對方
+                #     # holo_action_p0 = global_action_p0
+                #     # holo_action_p1 = global_action_p1
+                #     holo_action_p0 = Skill.No_action.value
+                #     holo_action_p1 = Skill.No_action.value
+                #     del action_window[0]
+                #     action_window.append(Skill.No_action.value)
+                # elif (player == 'P0' and status_data_p0[10] == b'1'[0]):   # HoloLens 端 P0 已經進入end game畫面
+                #     holo_action_p1 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+                #     del action_window[0]
+                #     action_window.append(Skill.No_action.value)
+                # elif (player == 'P1' and status_data_p1[10] == b'1'[0]):   # HoloLens 端 P1 已經進入end game畫面
+                #     holo_action_p0 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+                #     del action_window[0]
+                #     action_window.append(Skill.No_action.value)
+                # else:
+                del action_window[0]
 
-                    if (final_action == Skill.ATK_1_start.value):                                             # 如果上一個動作 是 螺旋丸的 start
-                        if (self.action == Skill.ATK_1_start.value or self.action == Skill.ATK_1_end.value):  # 如果現在的動作 是 螺旋丸的 start 或是 螺旋丸的 end
-                            action_window.append(self.action)
-                        elif (top2 == Skill.ATK_1_start.value or top2 == Skill.ATK_1_end.value):
-                            action_window.append(top2)
-                        elif (top3 == Skill.ATK_1_start.value or top3 == Skill.ATK_1_end.value):
-                            action_window.append(top3)
-                        else:
-                            action_window.append(self.action)
-                    elif (final_action == Skill.ATK_3_start.value):                                           # 如果上一個動作 是 歸派氣功的 start
-                        if (self.action == Skill.ATK_3_start.value or self.action == Skill.ATK_3_end.value):  # 如果現在的動作 是 歸派氣功的 start 或是 螺旋丸的 end
-                            action_window.append(self.action)
-                        elif (top2 == Skill.ATK_3_start.value or top2 == Skill.ATK_3_end.value):
-                            action_window.append(top2)
-                        elif (top3 == Skill.ATK_3_start.value or top3 == Skill.ATK_3_end.value):
-                            action_window.append(top3)
-                        else:
-                            action_window.append(self.action)
+                if (final_action == Skill.ATK_1_start.value):                                             # 如果上一個動作 是 螺旋丸的 start
+                    if (self.action == Skill.ATK_1_start.value or self.action == Skill.ATK_1_end.value):  # 如果現在的動作 是 螺旋丸的 start 或是 螺旋丸的 end
+                        action_window.append(self.action)
+                    elif (top2 == Skill.ATK_1_start.value or top2 == Skill.ATK_1_end.value):
+                        action_window.append(top2)
+                    elif (top3 == Skill.ATK_1_start.value or top3 == Skill.ATK_1_end.value):
+                        action_window.append(top3)
                     else:
                         action_window.append(self.action)
+                elif (final_action == Skill.ATK_3_start.value):                                           # 如果上一個動作 是 歸派氣功的 start
+                    if (self.action == Skill.ATK_3_start.value or self.action == Skill.ATK_3_end.value):  # 如果現在的動作 是 歸派氣功的 start 或是 螺旋丸的 end
+                        action_window.append(self.action)
+                    elif (top2 == Skill.ATK_3_start.value or top2 == Skill.ATK_3_end.value):
+                        action_window.append(top2)
+                    elif (top3 == Skill.ATK_3_start.value or top3 == Skill.ATK_3_end.value):
+                        action_window.append(top3)
+                    else:
+                        action_window.append(self.action)
+                else:
+                    action_window.append(self.action)
 
-                    temp = np.array([], np.int32)
-                    for i in range(num_class + 1):                              # 因為 action 從 1 開始，而非 0，這樣後面取 argmax 才會正確
-                        temp = np.append(temp, action_window.count(i))
-                    
-                    final_action = np.argmax(temp)
+                temp = np.array([], np.int32)
+                for i in range(num_class + 1):                              # 因為 action 從 1 開始，而非 0，這樣後面取 argmax 才會正確
+                    temp = np.append(temp, action_window.count(i))
+                
+                final_action = np.argmax(temp)
 
-                    if player == 'P0':
-                        holo_action_p1 = final_action
-                    elif player == 'P1':
-                        holo_action_p0 = final_action
-                    
-                    # with open('Debug_for_multiplayer.txt', 'r') as f:
-                    #     debug_action = f.readline()
-                    # holo_action_p0 = int(debug_action)
+                if player == 'P0':
+                    holo_action_p1 = final_action
+                elif player == 'P1':
+                    holo_action_p0 = final_action
 
                 #print(action_window)
 
             elif self.count % 3 == 0:
                 images.extend([img_tsn])
 
+            '''
+            if no_human == 1:                                          # 若其中一位玩家沒看著對方
+                # holo_action_p0 = global_action_p0
+                # holo_action_p1 = global_action_p1
+                holo_action_p0 = Skill.No_action.value
+                holo_action_p1 = Skill.No_action.value
+            '''
 
-            GameSystem(skill_damage=5, skill_wait_time=1.0)                     # 經過 GameSystem 判定雙方分數
+            # with open('Debug_for_multiplayer.txt', 'r') as f:
+            #     debug_action = f.readline()
+            # holo_action_p0 = int(debug_action)
+
+            if (player == 'P0' and status_data_p0[10] == b'1'[0]):     # HoloLens 端 P0 已經進入end game畫面
+                holo_action_p1 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+            elif (player == 'P1' and status_data_p1[10] == b'1'[0]):   # HoloLens 端 P1 已經進入end game畫面
+                holo_action_p0 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+
+
+            GameSystem(skill_damage=2, skill_wait_time=0.5, player_=player)                     # 經過 GameSystem 判定雙方分數
 
 
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
-            co_str = co_str + ',' + str(def_p0) + ',' + str(def_p1) + ',' + str(blood_effect_p0) + ',' + str(blood_effect_p1)
+            co_str = co_str + ',' + str(my_def_fail_p0) + ',' + str(my_def_succ_p0) + ',' + str(def_fail_p0) + ',' + str(def_succ_p0)
+            co_str = co_str + ',' + str(my_def_fail_p1) + ',' + str(my_def_succ_p1) + ',' + str(def_fail_p1) + ',' + str(def_succ_p1)
 
             ###### Debug for 3D position estimation ######
             # with open('Debug_for_3D_position_estimation.txt', 'r') as f:
@@ -603,21 +691,37 @@ class TServer(threading.Thread):
 
             # ------------ reset data ------------ #
             if (player == 'P0'):
-                blood_effect_p0 = 0
-                if gamepoint_p0 == 0 or gamepoint_p1 == 0:
+                my_def_fail_p0 = 0
+                my_def_succ_p0 = 0
+                def_fail_p0 = 0
+                def_succ_p0 = 0
+
+                if (status_data_p0[10] == b'1'[0] and player_count == 1):           # 當player數只有一人(自己)，需要把對方的輸贏標記reset，不然等對手接上Server時會錯亂
+                    p0_win_lose = 0
+                    p1_win_lose = 0
+                    gamepoint_p0 = 10
+                    #print('one player reset(P0)')
+                elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and player_count == 2):
                     p0_win_lose = 0
                     gamepoint_p0 = 10
                     print('---------- P0 Game system ready ----------')
             
             if (player == 'P1'):
-                blood_effect_p1 = 0
-                if gamepoint_p0 == 0 or gamepoint_p1 == 0:
+                my_def_fail_p1 = 0
+                my_def_succ_p1 = 0
+                def_fail_p1 = 0
+                def_succ_p1 = 0
+
+                if (status_data_p1[10] == b'1'[0] and player_count == 1):
+                    p0_win_lose = 0
+                    p1_win_lose = 0
+                    gamepoint_p1 = 10
+                    #print('one player reset(P1)')
+                elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and player_count == 2):
                     p1_win_lose = 0
                     gamepoint_p1 = 10
                     print('---------- P1 Game system ready ----------')
             
-            def_p0 = 0
-            def_p1 = 0
 
             # global_action_p0 = Skill.No_action.value
             # global_action_p1 = Skill.No_action.value
@@ -630,15 +734,15 @@ class TServer(threading.Thread):
             #     co_str_cp = co_str
             
             
-
             self.count += 1
-
             if cv2.waitKey(1) == 27:
                 break
 
         cv2.destroyWindow(window_name + player)
         print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
-        print ('Client %s:%s disconnected. (HoloLens)' % self.address)
+        print ('Client %s:%s disconnected.' % self.address, end='')
+        print('(' + player + ')')
+        player_count -= 1
         self.socket.close()
         #debug_file.close()
 
@@ -774,5 +878,3 @@ if __name__ == '__main__':
     while True:
         (client, adr) = sock.accept()
         TServer(client, adr, count=1, action=0, fps_time=0).start()
-
-

@@ -5,10 +5,6 @@ using UnityEngine;
 public class Skill : MonoBehaviour
 {
     protected bool alive = false;
-    public virtual void ready(Vector3 position, Vector3 forward, float duration){
-
-    }
-
     public virtual void ready(Vector3 position, Vector3 forward, float duration, float size){
 
     }
