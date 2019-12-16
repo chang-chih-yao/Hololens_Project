@@ -36,6 +36,10 @@
 ### 在Hololens眼鏡裡面就會看到這樣：  
 ![image](etcs/3D_panel_demo.jpg)
 
+[DEMO VIDEO-1](https://youtu.be/GcDtDXDkWOw)
+
+[DEMO VIDEO-2](https://youtu.be/jx-tkRXsz-I)
+
 ***
 
 ## Our Dataset
