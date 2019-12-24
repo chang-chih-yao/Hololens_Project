@@ -902,7 +902,7 @@ class TServer(threading.Thread):
                     p0_win_lose = 0
                     p1_win_lose = 0
                     gamepoint_p0 = 10.0
-                    print('one player reset(P0)')
+                    #print('one player reset(P0)')
                 elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and len(player_list) == 2):
                     p0_win_lose = 0
                     gamepoint_p0 = 10.0
