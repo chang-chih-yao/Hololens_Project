@@ -21,14 +21,27 @@ namespace HoloLensWithOpenCVForUnityExample
         {
             base.Start ();
 
-            string s = Start_Game.text;
-            s = s + ", IP : " + Game_Stats.IP;
-            Start_Game.text = s;
+            if (Game_Stats.IP_SET == true)
+            {
+                string s = Start_Game.text;
+                if (Game_Stats.PlayerID == "holo_P0")
+                    s = s + ", IP : " + Game_Stats.IP + " (You select P1)";
+                else
+                    s = s + ", IP : " + Game_Stats.IP + " (You select P2)";
+                Start_Game.text = s;
+            }
+            else
+            {
+                string s = Start_Game.text;
+                s = s + ", IP : None";
+                Start_Game.text = s;
+            }
 
-            exampleTitle.text = "HoloLens AR Game " + Application.version;
+            //exampleTitle.text = "HoloLens MR Game " + Application.version;
+            exampleTitle.text = "HoloLens MR Battle Game";
 
-            versionInfo.text = Core.NATIVE_LIBRARY_NAME + " " + OpenCVForUnity.UnityUtils.Utils.getVersion() + " (" + Core.VERSION + ")";
-            versionInfo.text += " / UnityEditor " + Application.unityVersion;
+            //versionInfo.text = Core.NATIVE_LIBRARY_NAME + " " + OpenCVForUnity.UnityUtils.Utils.getVersion() + " (" + Core.VERSION + ")";
+            versionInfo.text = "UnityEditor " + Application.unityVersion;
             versionInfo.text += " / ";
 
             #if UNITY_EDITOR

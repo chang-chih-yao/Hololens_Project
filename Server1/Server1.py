@@ -102,7 +102,7 @@ num_class = 11
 
 model = TSN(num_class, 3, 'RGB', base_model='resnet34', consensus_type='avg', dropout=0.7)
 
-checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1104_9_actions_11_class_MOD_4_NEW.pth')
+checkpoint = torch.load('D:\\Code\\Hololens_Project\\Core\\tsn_pytorch\\pth\\holo_2019_1220_9_actions_11_class_MOD_4_NEW.pth')
 print("model epoch {} best prec@1: {}".format(checkpoint['epoch'], checkpoint['best_prec1']))
 
 base_dict = {'.'.join(k.split('.')[1:]): v for k,v in list(checkpoint['state_dict'].items())}
@@ -137,8 +137,8 @@ print('Wait for connection...')
 
 global_action_p0 = 0  # outside camera action
 global_action_p1 = 0
-gamepoint_p0 = 10
-gamepoint_p1 = 10
+gamepoint_p0 = 10.0
+gamepoint_p1 = 10.0
 p0_win_lose = 0       # 1->win, 2->lose
 p1_win_lose = 0       # 1->win, 2->lose
 holo_action_p0 = 0
@@ -158,16 +158,20 @@ my_def_succ_p1 = 0
 def_fail_p1 = 0
 def_succ_p1 = 0
 
+player_id_err_p0 = 0
+player_id_err_p1 = 0
+
 wait_time_p0 = 0.0
 wait_time_p1 = 0.0
 
 status_data_p0 = b'0,0,0,0,0,0'    # status = "被對方的技能(ATK1)打到, 被對方的技能(ATK2)打到, 被對方的技能(ATK3)打到, 被對方的技能(ATK4)打到, end game, start new game"
 status_data_p1 = b'0,0,0,0,0,0'
 data_cp = b''
+
 frame_size_cp = None
 co_str_cp = ''
-player_count = 0
-
+#player_count = 0
+player_list = ''
 
 def validate(model, rst):
 
@@ -182,7 +186,7 @@ def validate(model, rst):
     return output, pred
 
 
-def GameSystem(skill_damage=2, skill_wait_time=0.5, player_='P0'):
+def GameSystem(skill_damage=2.0, skill_wait_time=0.5, player_='P0'):
     global gamepoint_p0, gamepoint_p1
     global p0_win_lose, p1_win_lose
     global holo_action_p0, holo_action_p1
@@ -319,17 +323,17 @@ def GameSystem(skill_damage=2, skill_wait_time=0.5, player_='P0'):
 
     ############################# 遊戲結束 #############################
     if player_ == 'P0':
-        if gamepoint_p0 == 0:
+        if gamepoint_p0 <= 0.0:
             print('p0 lose')
             p0_win_lose = 2
-        elif gamepoint_p1 == 0:
+        elif gamepoint_p1 <= 0.0:
             print('p0 win')
             p0_win_lose = 1
     elif player_ == 'P1':
-        if gamepoint_p0 == 0:
+        if gamepoint_p0 <= 0.0:
             print('p1 win')
             p1_win_lose = 1
-        elif gamepoint_p1 == 0:
+        elif gamepoint_p1 <= 0.0:
             print('p1 lose')
             p1_win_lose = 2
 
@@ -353,26 +357,124 @@ class TServer(threading.Thread):
         kalman.processNoiseCov    ：为模型系统的噪声，噪声越大，预测结果越不稳定，越容易接近模型系统预测值，且单步变化越大，相反，若噪声小，则预测结果与上个计算结果相差不大。
         kalman.measurementNoiseCov：为测量系统的协方差矩阵，方差越小，预测结果越接近测量值
         '''
+        processNoiseCov = 1e-4
+        measurementNoiseCov = 0.01
+
+        self.kalman_RShoulder = cv2.KalmanFilter(4,2)
+        self.kalman_RShoulder.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_RShoulder.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_RShoulder.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_RShoulder.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_RShoulder.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
         self.kalman_RElbow = cv2.KalmanFilter(4,2)
         self.kalman_RElbow.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
         self.kalman_RElbow.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
-        self.kalman_RElbow.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * 1e-4
-        self.kalman_RElbow.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.01
+        self.kalman_RElbow.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_RElbow.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
         self.kalman_RElbow.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
 
         self.kalman_RWrist = cv2.KalmanFilter(4,2)
         self.kalman_RWrist.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
         self.kalman_RWrist.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
-        self.kalman_RWrist.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * 1e-4
-        self.kalman_RWrist.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * 0.01
+        self.kalman_RWrist.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_RWrist.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
         self.kalman_RWrist.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
 
+        self.kalman_LShoulder = cv2.KalmanFilter(4,2)
+        self.kalman_LShoulder.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_LShoulder.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_LShoulder.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_LShoulder.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_LShoulder.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_LElbow = cv2.KalmanFilter(4,2)
+        self.kalman_LElbow.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_LElbow.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_LElbow.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_LElbow.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_LElbow.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_LWrist = cv2.KalmanFilter(4,2)
+        self.kalman_LWrist.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_LWrist.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_LWrist.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_LWrist.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_LWrist.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_RHip = cv2.KalmanFilter(4,2)
+        self.kalman_RHip.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_RHip.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_RHip.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_RHip.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_RHip.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_RKnee = cv2.KalmanFilter(4,2)
+        self.kalman_RKnee.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_RKnee.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_RKnee.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_RKnee.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_RKnee.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_RAnkle = cv2.KalmanFilter(4,2)
+        self.kalman_RAnkle.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_RAnkle.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_RAnkle.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_RAnkle.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_RAnkle.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_LHip = cv2.KalmanFilter(4,2)
+        self.kalman_LHip.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_LHip.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_LHip.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_LHip.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_LHip.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_LKnee = cv2.KalmanFilter(4,2)
+        self.kalman_LKnee.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_LKnee.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_LKnee.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_LKnee.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_LKnee.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.kalman_LAnkle = cv2.KalmanFilter(4,2)
+        self.kalman_LAnkle.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
+        self.kalman_LAnkle.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]], np.float32)
+        self.kalman_LAnkle.processNoiseCov = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], np.float32) * processNoiseCov
+        self.kalman_LAnkle.measurementNoiseCov = np.array([[1,0],[0,1]], np.float32) * measurementNoiseCov
+        self.kalman_LAnkle.errorCovPost = np.array([[1,0],[0,1]], np.float32) * 1
+
+        self.ori_RShoulder = np.array([[0],[0]],np.float32)
         self.ori_RElbow = np.array([[0],[0]],np.float32)
-        self.pre_RElbow = np.array([[0],[0]],np.float32)
         self.ori_RWrist = np.array([[0],[0]],np.float32)
+        self.ori_LShoulder = np.array([[0],[0]],np.float32)
+        self.ori_LElbow = np.array([[0],[0]],np.float32)
+        self.ori_LWrist = np.array([[0],[0]],np.float32)
+        self.ori_RHip = np.array([[0],[0]],np.float32)
+        self.ori_RKnee = np.array([[0],[0]],np.float32)
+        self.ori_RAnkle = np.array([[0],[0]],np.float32)
+        self.ori_LHip = np.array([[0],[0]],np.float32)
+        self.ori_LKnee = np.array([[0],[0]],np.float32)
+        self.ori_LAnkle = np.array([[0],[0]],np.float32)
+
+        self.pre_RShoulder = np.array([[0],[0]],np.float32)
+        self.pre_RElbow = np.array([[0],[0]],np.float32)
         self.pre_RWrist = np.array([[0],[0]],np.float32)
+        self.pre_LShoulder = np.array([[0],[0]],np.float32)
+        self.pre_LElbow = np.array([[0],[0]],np.float32)
+        self.pre_LWrist = np.array([[0],[0]],np.float32)
+        self.pre_RHip = np.array([[0],[0]],np.float32)
+        self.pre_RKnee = np.array([[0],[0]],np.float32)
+        self.pre_RAnkle = np.array([[0],[0]],np.float32)
+        self.pre_LHip = np.array([[0],[0]],np.float32)
+        self.pre_LKnee = np.array([[0],[0]],np.float32)
+        self.pre_LAnkle = np.array([[0],[0]],np.float32)
+        
 
     def run(self):
+        #global player_count
+        global player_list, player_id_err_p0, player_id_err_p1
+
         print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
         print ('Client %s:%s connected.' % self.address)
         window_name = str(self.address[1])
@@ -383,9 +485,25 @@ class TServer(threading.Thread):
         self.socket.send(b'OK')
 
         if ID == b'holo_P0':
-            self.run_holo(window_name, 'P0')
+            #player_count += 1
+            if player_list.find('0') == -1:       # 若沒有人選擇 player 0
+                player_list += '0'
+                self.run_holo(window_name, 'P0')
+            else:                                 # 若已經有人選擇 player 0
+                print('Wrong player ID selected, the system has automatically selected another player ID.')
+                player_id_err_p0 = 1
+                player_list += '1'
+                self.run_holo(window_name, 'P1')  # 把 player ID 改成 P1
         elif ID == b'holo_P1':
-            self.run_holo(window_name, 'P1')
+            #player_count += 1
+            if player_list.find('1') == -1:
+                player_list += '1'
+                self.run_holo(window_name, 'P1')
+            else:
+                print('Wrong player ID selected, the system has automatically selected another player ID.')
+                player_id_err_p1 = 1
+                player_list += '0'
+                self.run_holo(window_name, 'P0')  # 把 player ID 改成 P0
         elif ID == b'4cam':
             self.run_4cam(window_name)
         elif ID == b'Unity_demo':
@@ -405,15 +523,16 @@ class TServer(threading.Thread):
         return my_str
 
     def run_holo_reset(self):
-        global p0_win_lose
-        global p1_win_lose
-        global gamepoint_p0
-        global gamepoint_p1
+        global p0_win_lose, p1_win_lose
+        global gamepoint_p0, gamepoint_p1
+        global holo_action_p0, holo_action_p1
 
+        holo_action_p0 = 1
+        holo_action_p1 = 1
         p0_win_lose = 0
         p1_win_lose = 0
-        gamepoint_p0 = 10
-        gamepoint_p1 = 10
+        gamepoint_p0 = 10.0
+        gamepoint_p1 = 10.0
 
     def run_demo(self, window_name):
         global frame_size_cp
@@ -446,16 +565,16 @@ class TServer(threading.Thread):
         global status_data_p0, status_data_p1
         global my_def_fail_p0, my_def_succ_p0, def_fail_p0, def_succ_p0
         global my_def_fail_p1, my_def_succ_p1, def_fail_p1, def_succ_p1
-
-        global player_count
+        global player_list, player_id_err_p0, player_id_err_p1
 
         global frame_size_cp
         global data_cp
         global co_str_cp
 
+        print(player_list)
+
         images = list()
         final_action = 0
-        player_count += 1
 
         action_window = list()          # action sliding window
         for i in range(3):                 # sliding window size = 3
@@ -464,7 +583,9 @@ class TServer(threading.Thread):
         fps_array = list()                 # FSP sliding window
         for i in range(5):                 # sliding window size = 5
             fps_array.append(15.0)
+        
         avg_fps = 15.0
+        step_size = 3
 
         ################### for debug ###################
         # temp_cou = 0
@@ -517,25 +638,101 @@ class TServer(threading.Thread):
             del fps_array[0]
             fps_array.append(1.0 / (time.time() - self.fps_time))
             avg_fps = sum(fps_array)/5.0
+            if avg_fps > 16.0:
+                step_size = 3
+            elif avg_fps > 10.0:
+                step_size = 2
+            else:
+                step_size = 1
+
             cv2.putText(img, "FPS: %f" % (avg_fps), (10, 10),  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.imshow(window_name + player, img)
             self.fps_time = time.time()
 
             ####################### Kalman filter #######################
+            if(key_points[2][0] != 0 or key_points[2][1] != 0):
+                self.ori_RShoulder = np.array([[key_points[2][0]],[key_points[2][1]]], np.float32)
+                self.kalman_RShoulder.correct(self.ori_RShoulder)
+                self.pre_RShoulder = self.kalman_RShoulder.predict()
+                key_points[2][0] = self.pre_RShoulder[0,0]
+                key_points[2][1] = self.pre_RShoulder[1,0]
+
             if(key_points[3][0] != 0 or key_points[3][1] != 0):
                 self.ori_RElbow = np.array([[key_points[3][0]],[key_points[3][1]]], np.float32)
                 self.kalman_RElbow.correct(self.ori_RElbow)
                 self.pre_RElbow = self.kalman_RElbow.predict()
+                key_points[3][0] = self.pre_RElbow[0,0]
+                key_points[3][1] = self.pre_RElbow[1,0]
             
             if(key_points[4][0] != 0 or key_points[4][1] != 0):
                 self.ori_RWrist = np.array([[key_points[4][0]],[key_points[4][1]]], np.float32)
                 self.kalman_RWrist.correct(self.ori_RWrist)
                 self.pre_RWrist = self.kalman_RWrist.predict()
+                key_points[4][0] = self.pre_RWrist[0,0]
+                key_points[4][1] = self.pre_RWrist[1,0]
 
-            key_points[3][0] = self.pre_RElbow[0,0]
-            key_points[3][1] = self.pre_RElbow[1,0]
-            key_points[4][0] = self.pre_RWrist[0,0]
-            key_points[4][1] = self.pre_RWrist[1,0]
+            if(key_points[5][0] != 0 or key_points[5][1] != 0):
+                self.ori_LShoulder = np.array([[key_points[5][0]],[key_points[5][1]]], np.float32)
+                self.kalman_LShoulder.correct(self.ori_LShoulder)
+                self.pre_LShoulder = self.kalman_LShoulder.predict()
+                key_points[5][0] = self.pre_LShoulder[0,0]
+                key_points[5][1] = self.pre_LShoulder[1,0]
+
+            if(key_points[6][0] != 0 or key_points[6][1] != 0):
+                self.ori_LElbow = np.array([[key_points[6][0]],[key_points[6][1]]], np.float32)
+                self.kalman_LElbow.correct(self.ori_LElbow)
+                self.pre_LElbow = self.kalman_LElbow.predict()
+                key_points[6][0] = self.pre_LElbow[0,0]
+                key_points[6][1] = self.pre_LElbow[1,0]
+            
+            if(key_points[7][0] != 0 or key_points[7][1] != 0):
+                self.ori_LWrist = np.array([[key_points[7][0]],[key_points[7][1]]], np.float32)
+                self.kalman_LWrist.correct(self.ori_LWrist)
+                self.pre_LWrist = self.kalman_LWrist.predict()
+                key_points[7][0] = self.pre_LWrist[0,0]
+                key_points[7][1] = self.pre_LWrist[1,0]
+            
+            if(key_points[8][0] != 0 or key_points[8][1] != 0):
+                self.ori_RHip = np.array([[key_points[8][0]],[key_points[8][1]]], np.float32)
+                self.kalman_RHip.correct(self.ori_RHip)
+                self.pre_RHip = self.kalman_RHip.predict()
+                key_points[8][0] = self.pre_RHip[0,0]
+                key_points[8][1] = self.pre_RHip[1,0]
+
+            if(key_points[9][0] != 0 or key_points[9][1] != 0):
+                self.ori_RKnee = np.array([[key_points[9][0]],[key_points[9][1]]], np.float32)
+                self.kalman_RKnee.correct(self.ori_RKnee)
+                self.pre_RKnee = self.kalman_RKnee.predict()
+                key_points[9][0] = self.pre_RKnee[0,0]
+                key_points[9][1] = self.pre_RKnee[1,0]
+            
+            if(key_points[10][0] != 0 or key_points[10][1] != 0):
+                self.ori_RAnkle = np.array([[key_points[10][0]],[key_points[10][1]]], np.float32)
+                self.kalman_RAnkle.correct(self.ori_RAnkle)
+                self.pre_RAnkle = self.kalman_RAnkle.predict()
+                key_points[10][0] = self.pre_RAnkle[0,0]
+                key_points[10][1] = self.pre_RAnkle[1,0]
+
+            if(key_points[11][0] != 0 or key_points[11][1] != 0):
+                self.ori_LHip = np.array([[key_points[11][0]],[key_points[11][1]]], np.float32)
+                self.kalman_LHip.correct(self.ori_LHip)
+                self.pre_LHip = self.kalman_LHip.predict()
+                key_points[11][0] = self.pre_LHip[0,0]
+                key_points[11][1] = self.pre_LHip[1,0]
+
+            if(key_points[12][0] != 0 or key_points[12][1] != 0):
+                self.ori_LKnee = np.array([[key_points[12][0]],[key_points[12][1]]], np.float32)
+                self.kalman_LKnee.correct(self.ori_LKnee)
+                self.pre_LKnee = self.kalman_LKnee.predict()
+                key_points[12][0] = self.pre_LKnee[0,0]
+                key_points[12][1] = self.pre_LKnee[1,0]
+            
+            if(key_points[13][0] != 0 or key_points[13][1] != 0):
+                self.ori_LAnkle = np.array([[key_points[13][0]],[key_points[13][1]]], np.float32)
+                self.kalman_LAnkle.correct(self.ori_LAnkle)
+                self.pre_LAnkle = self.kalman_LAnkle.predict()
+                key_points[13][0] = self.pre_LAnkle[0,0]
+                key_points[13][1] = self.pre_LAnkle[1,0]
 
             co_str = self.openpose_coordinate_to_str(key_points)
 
@@ -558,7 +755,7 @@ class TServer(threading.Thread):
 
             img_tsn = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
 
-            if self.count % 3 == 0 and len(images) == 2:
+            if self.count % step_size == 0 and len(images) == 2:
                 images.extend([img_tsn])
                 # print(images[0].size)
                 rst = trans(images)
@@ -642,7 +839,7 @@ class TServer(threading.Thread):
 
                 #print(action_window)
 
-            elif self.count % 3 == 0:
+            elif self.count % step_size == 0:
                 images.extend([img_tsn])
 
             '''
@@ -657,19 +854,24 @@ class TServer(threading.Thread):
             #     debug_action = f.readline()
             # holo_action_p0 = int(debug_action)
 
-            if (player == 'P0' and status_data_p0[10] == b'1'[0]):     # HoloLens 端 P0 已經進入end game畫面
-                holo_action_p1 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
-            elif (player == 'P1' and status_data_p1[10] == b'1'[0]):   # HoloLens 端 P1 已經進入end game畫面
-                holo_action_p0 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+            if (player == 'P0'):
+                if status_data_p0[10] == b'1'[0] or gamepoint_p0 == 0.0:   # HoloLens 端 P0 已經進入end game畫面
+                    holo_action_p0 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+                    holo_action_p1 = Skill.No_action.value
+            if (player == 'P1'):
+                if status_data_p1[10] == b'1'[0] or gamepoint_p1 == 0.0:   # HoloLens 端 P1 已經進入end game畫面
+                    holo_action_p0 = Skill.No_action.value                 # 遊戲 reset 階段辨識到的動作一率為 No action
+                    holo_action_p1 = Skill.No_action.value
 
 
-            GameSystem(skill_damage=2, skill_wait_time=0.5, player_=player)                     # 經過 GameSystem 判定雙方分數
+            GameSystem(skill_damage=2.5, skill_wait_time=0.5, player_=player)                     # 經過 GameSystem 判定雙方分數
 
 
             co_str = co_str + str(self.count) + ',' + str(holo_action_p0) + ',' + str(holo_action_p1)
             co_str = co_str + ',' + str(gamepoint_p0) + ',' + str(gamepoint_p1) + ',' + str(p0_win_lose) + ',' + str(p1_win_lose)
             co_str = co_str + ',' + str(my_def_fail_p0) + ',' + str(my_def_succ_p0) + ',' + str(def_fail_p0) + ',' + str(def_succ_p0)
             co_str = co_str + ',' + str(my_def_fail_p1) + ',' + str(my_def_succ_p1) + ',' + str(def_fail_p1) + ',' + str(def_succ_p1)
+            co_str = co_str + ',' + str(player_id_err_p0) + ',' + str(player_id_err_p1)
 
             ###### Debug for 3D position estimation ######
             # with open('Debug_for_3D_position_estimation.txt', 'r') as f:
@@ -696,14 +898,14 @@ class TServer(threading.Thread):
                 def_fail_p0 = 0
                 def_succ_p0 = 0
 
-                if (status_data_p0[10] == b'1'[0] and player_count == 1):           # 當player數只有一人(自己)，需要把對方的輸贏標記reset，不然等對手接上Server時會錯亂
+                if (status_data_p0[10] == b'1'[0] and len(player_list) == 1):           # 當player數只有一人(自己)，需要把對方的輸贏標記reset，不然等對手接上Server時會錯亂
                     p0_win_lose = 0
                     p1_win_lose = 0
-                    gamepoint_p0 = 10
-                    #print('one player reset(P0)')
-                elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and player_count == 2):
+                    gamepoint_p0 = 10.0
+                    print('one player reset(P0)')
+                elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and len(player_list) == 2):
                     p0_win_lose = 0
-                    gamepoint_p0 = 10
+                    gamepoint_p0 = 10.0
                     print('---------- P0 Game system ready ----------')
             
             if (player == 'P1'):
@@ -712,14 +914,14 @@ class TServer(threading.Thread):
                 def_fail_p1 = 0
                 def_succ_p1 = 0
 
-                if (status_data_p1[10] == b'1'[0] and player_count == 1):
+                if (status_data_p1[10] == b'1'[0] and len(player_list) == 1):
                     p0_win_lose = 0
                     p1_win_lose = 0
-                    gamepoint_p1 = 10
+                    gamepoint_p1 = 10.0
                     #print('one player reset(P1)')
-                elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and player_count == 2):
+                elif (status_data_p0[10] == b'1'[0] and status_data_p1[10] == b'1'[0] and len(player_list) == 2):
                     p1_win_lose = 0
-                    gamepoint_p1 = 10
+                    gamepoint_p1 = 10.0
                     print('---------- P1 Game system ready ----------')
             
 
@@ -742,7 +944,12 @@ class TServer(threading.Thread):
         print(datetime.datetime.now().strftime('%m/%d %H:%M:%S '), end='')
         print ('Client %s:%s disconnected.' % self.address, end='')
         print('(' + player + ')')
-        player_count -= 1
+        #player_count -= 1
+        if (player == 'P0'):
+            player_list = player_list.replace('0', '')
+        if (player == 'P1'):
+            player_list = player_list.replace('1', '')
+        print(player_list)
         self.socket.close()
         #debug_file.close()
 

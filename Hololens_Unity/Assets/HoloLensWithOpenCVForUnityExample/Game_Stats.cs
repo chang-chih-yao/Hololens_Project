@@ -4,10 +4,11 @@
     private static float pre_z = -35f;
     private static float height = 175f;
     private static string ip = "192.168.";
+    private static bool ip_set = false;
     private static string playerID = "None";
     private static bool demo = false;
     private static bool debug = false;
-    private static bool draw_skeleton = true;
+    private static bool draw_skeleton = false;
 
     public static string IP {
         get
@@ -17,6 +18,18 @@
         set
         {
             ip = value;
+        }
+    }
+
+    public static bool IP_SET
+    {
+        get
+        {
+            return ip_set;
+        }
+        set
+        {
+            ip_set = value;
         }
     }
 

@@ -192,7 +192,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_180_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -522,9 +522,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Debug Text : False
-
-'
+  m_Text: 'Debug Text : False'
 --- !u!222 &201379987
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1121,9 +1119,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Demo Mode : False
-
-'
+  m_Text: 'Demo Mode : False'
 --- !u!222 &720799876
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1497,7 +1493,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_150_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1915,7 +1911,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_155_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2044,7 +2040,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_170_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2429,7 +2425,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_185_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2637,7 +2633,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_175_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3135,7 +3131,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_160_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3735,7 +3731,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 0, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -3755,9 +3751,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Draw Skeleton : True
-
-'
+  m_Text: 'Draw Skeleton : False'
 --- !u!222 &1896791746
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3846,7 +3840,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 993264511}
-        m_MethodName: OnBackButtonClick
+        m_MethodName: On_165_Click
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

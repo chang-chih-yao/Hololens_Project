@@ -31,7 +31,7 @@ public class Blood : MonoBehaviour
             else
             {
                 float my_blood_alpha = my_blood.color.a;
-                my_blood_alpha = my_blood_alpha - 0.02f;
+                my_blood_alpha = my_blood_alpha - 0.03f;
                 if (my_blood_alpha >= 0f)
                 {
                     my_blood.color = new Color(my_blood.color.r, my_blood.color.g, my_blood.color.b, my_blood_alpha);
@@ -54,7 +54,7 @@ public class Blood : MonoBehaviour
             else
             {
                 float blood_alpha = blood.color.a;
-                blood_alpha = blood_alpha - 0.02f;
+                blood_alpha = blood_alpha - 0.03f;
                 if (blood_alpha >= 0f)
                 {
                     blood.color = new Color(blood.color.r, blood.color.g, blood.color.b, blood_alpha);

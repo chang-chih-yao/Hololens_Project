@@ -121,7 +121,7 @@ def for_cross_val_7_class():
 
 
 if __name__ == "__main__":
-    MOD_X(MOD_NUM=3)
+    MOD_X(MOD_NUM=4)
     #for_7_class(MOD_NUM=3)
     #for_cross_val_7_class()
     

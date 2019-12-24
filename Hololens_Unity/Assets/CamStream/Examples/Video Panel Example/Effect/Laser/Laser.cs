@@ -15,15 +15,14 @@ public class Laser : Skill
 
 
         this.transform.localScale = new Vector3( size * 1,  size * 1, size * 1);
-        this.launch();
         
     }
 
-    public void launch()
-    {
-        Rigidbody rb = this.GetComponent<Rigidbody>();
-        rb.velocity = this.transform.forward * 50f;
-    }
+    // public override void setPosition()
+    // {
+    //     Rigidbody rb = this.GetComponent<Rigidbody>();
+    //     rb.velocity = this.transform.forward * 30f;
+    // }
     public override void finish(float duration){
         alive = false;
         DOTween.KillAll();

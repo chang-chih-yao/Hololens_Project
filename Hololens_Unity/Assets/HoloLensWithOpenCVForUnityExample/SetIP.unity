@@ -2430,7 +2430,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 11.107
+  m_Text: Custom
 --- !u!222 &1101808497
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2635,7 +2635,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 136.09998, y: -29.600006}
+  m_AnchoredPosition: {x: 160, y: 14}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1112473935
@@ -2798,7 +2798,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: I am Player 0
+  m_Text: I am Player 1
 --- !u!222 &1166918268
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3015,7 +3015,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 136.1, y: 139.8}
+  m_AnchoredPosition: {x: 160, y: 139.8}
   m_SizeDelta: {x: 87.34, y: 54.72}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1362869939
@@ -3169,7 +3169,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: I am Player 1
+  m_Text: I am Player 2
 --- !u!222 &1366236171
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3214,7 +3214,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 136.1, y: 52}
+  m_AnchoredPosition: {x: 160, y: 79}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1523223761

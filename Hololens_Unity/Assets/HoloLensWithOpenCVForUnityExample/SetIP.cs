@@ -18,9 +18,9 @@ namespace HoloLensWithOpenCVForUnityExample
             s = Game_Stats.IP;
             IP.text = s;
             if (Game_Stats.PlayerID == "holo_P0")
-                Player.text = "P0";
-            else if (Game_Stats.PlayerID == "holo_P1")
                 Player.text = "P1";
+            else if (Game_Stats.PlayerID == "holo_P1")
+                Player.text = "P2";
             else
                 Player.text = "Choose Player";
         }
@@ -107,7 +107,7 @@ namespace HoloLensWithOpenCVForUnityExample
 
         public void On_Enter_Click()
         {
-            if(Enter_text.text == "Tyep Error")
+            if(Enter_text.text == "Type Error")
             {
                 Enter_text.text = "Enter";
                 Enter_text.color = Color.black;
@@ -120,6 +120,7 @@ namespace HoloLensWithOpenCVForUnityExample
                     if (Game_Stats.PlayerID != "None")
                     {
                         Game_Stats.IP = s;
+                        Game_Stats.IP_SET = true;
                         LoadScene("HoloLensWithOpenCVForUnityExample");
                     }
                 }
@@ -151,6 +152,7 @@ namespace HoloLensWithOpenCVForUnityExample
             if (Game_Stats.PlayerID != "None")
             {
                 Game_Stats.IP = "192.168.60.2";
+                Game_Stats.IP_SET = true;
                 LoadScene("HoloLensWithOpenCVForUnityExample");
             }
         }
@@ -158,13 +160,13 @@ namespace HoloLensWithOpenCVForUnityExample
         public void On_P0_Click()
         {
             Game_Stats.PlayerID = "holo_P0";
-            Player.text = "P0";
+            Player.text = "P1";
         }
 
         public void On_P1_Click()
         {
             Game_Stats.PlayerID = "holo_P1";
-            Player.text = "P1";
+            Player.text = "P2";
         }
     }
 }

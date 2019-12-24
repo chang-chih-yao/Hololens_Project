@@ -39,15 +39,14 @@ public class VideoPanelApp : MonoBehaviour
 
 
     HoloLensCameraStream.Resolution _resolution;
-
-    //"Injected" objects.
+    
     VideoPanel _videoPanelUI;
     VideoCapture _videoCapture;
 
     IntPtr _spatialCoordinateSystemPtr;
     
     private string str_text;
-    private Boolean connect = false;
+    public static Boolean connect = false;
     private Boolean animation_flag = false;
     private Boolean my_animation_flag = false;
     private Boolean ATK_1_animation = false;
@@ -60,11 +59,6 @@ public class VideoPanelApp : MonoBehaviour
     private Boolean my_ATK_3_animation = false;
     private Boolean my_ATK_4_animation = false;
     private Boolean my_ATK_4_animation_end = false;
-    //private Boolean SK2_fail_flag = false;
-    //private Boolean my_SK2_fail_flag = false;
-    //private Boolean blood_animation = false;
-    //private Boolean defense_animation = false;
-    //private Boolean failed_attack_animation = false;
     private Boolean my_def_succ = false;
     private Boolean def_succ = false;
     private Boolean end_game_flag = false;
@@ -130,26 +124,21 @@ public class VideoPanelApp : MonoBehaviour
     
     private float[] Joints_co;
     private float[] height_window;
-
-    private string player;
+    
     private int action = 0;
     private int my_action = 0;
     private int holo_action_p0 = -1;
     private int holo_action_p1 = -1;
     private float gamepoint_p0 = 10f;
     private float gamepoint_p1 = 10f;
-    private float cur_gamepoint_p0 = 10f;
-    private float cur_gamepoint_p1 = 10f;
     private int p0_win_lose = 0;
     private int p1_win_lose = 0;
-    /*private int defense_skill_2_p0 = 0;
-    private int defense_skill_2_p1 = 0;
-    private int blood_effect_p0 = 0;
-    private int blood_effect_p1 = 0;*/
     private int my_def_fail_p0 = 0;
     private int my_def_succ_p0 = 0;
     private int def_fail_p0 = 0;
     private int def_succ_p0 = 0;
+    public static int player_id_err_p0 = -1;
+    public static int player_id_err_p1 = -1;
 
     private int my_def_fail_p1 = 0;
     private int my_def_succ_p1 = 0;
@@ -176,6 +165,10 @@ public class VideoPanelApp : MonoBehaviour
     private float ATK_4_wait_time;
     private float my_ATK_2_wait_time;
     private float my_ATK_4_wait_time;
+    private float ATK_2_hit_recover = 0f;
+    private float ATK_4_hit_recover = 0f;
+    private float my_ATK_2_hit_recover = 0f;
+    private float my_ATK_4_hit_recover = 0f;
 
     private float P0_HP_X;
     private float P1_HP_X;
@@ -221,8 +214,7 @@ public class VideoPanelApp : MonoBehaviour
         recv_frame_old = 0;
         P0_HP_X = P0_HP.GetComponent<RectTransform>().localPosition.x;
         P1_HP_X = P1_HP.GetComponent<RectTransform>().localPosition.x;
-
-        player = Game_Stats.PlayerID;
+        
         game_status = new byte[256];
 
         height_window = new float[5];
@@ -234,7 +226,7 @@ public class VideoPanelApp : MonoBehaviour
 
         if (Game_Stats.DEMO)     // 有 image panel
         {
-            pre_z = 0f;
+            pre_z = -5f;
             canvas_openpose.GetComponent<Transform>().localPosition = new Vector3(0, 0, pre_z);
             image_panel.SetActive(true);
         }
@@ -399,25 +391,10 @@ public class VideoPanelApp : MonoBehaviour
             return new Vector3(x / 10.0f - 22.4f, -(y / 10.0f - 12.6f), 0f);
         else
             return new Vector3(x / 10.0f - 22.4f + 2f, -(y / 10.0f - 12.6f + 0.7f), 0f);
-        
     }
 
     private Vector3 Skill_2_coordinate_trans(Vector3 RWrist, Vector3 RElbow)
     {
-        /*if (Game_Stats.DEMO)
-        {
-            Vector3 RWrist = new Vector3(RWrist_x / 10.0f - 22.4f, -(RWrist_y / 10.0f - 12.6f), pre_z);
-            Vector3 RElbow = new Vector3(RElbow_x / 10.0f - 22.4f, -(RElbow_y / 10.0f - 12.6f), pre_z);
-            Vector3 my_vec = RWrist - RElbow;
-            return RElbow + 1.2f * my_vec;
-        }
-        else
-        {
-            Vector3 RWrist = new Vector3(RWrist_x / 10.0f - 22.4f + 2f, -(RWrist_y / 10.0f - 12.6f + 0.7f), pre_z);
-            Vector3 RElbow = new Vector3(RElbow_x / 10.0f - 22.4f + 2f, -(RElbow_y / 10.0f - 12.6f + 0.7f), pre_z);
-            Vector3 my_vec = RWrist - RElbow;
-            return RElbow + 1.2f * my_vec;
-        }*/
         Vector3 new_RWrist = new Vector3(RWrist.x, RWrist.y, pre_z);
         Vector3 new_RElbow = new Vector3(RElbow.x, RElbow.y, pre_z);
         Vector3 my_vec = new_RWrist - new_RElbow;
@@ -532,21 +509,21 @@ public class VideoPanelApp : MonoBehaviour
     private void Update()
     {
         if (connect == true) {
-            //pre_z = pre_z - 0.01f;
             //panel.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
             //debug_4.text = "blood_effect\n" + blood_effect_p0.ToString() + ", " + blood_effect_p1.ToString();
 
             //canvas_openpose.GetComponent<Transform>().localPosition = new Vector3(0, 0, pre_z);
             //Debug_Spere2.GetComponent<Transform>().localPosition = new Vector3(2f, 2f, pre_z);
 
-            debug_1.text = action.ToString() + ", " + holo_action_p0.ToString() + "|" + holo_action_p1.ToString() + ", " + gamepoint_p0.ToString() + "|" + gamepoint_p1.ToString() + ", " + player;
-            debug_2.text = ((int)fps).ToString();
-            if ((int)fps < 10)
-                debug_2.color = Color.red;
-            else if ((int)fps < 30 && (int)fps >= 10)
-                debug_2.color = Color.yellow;
-            else
-                debug_2.color = Color.green;
+            debug_1.text = action.ToString() + ", " + holo_action_p0.ToString() + "|" + holo_action_p1.ToString() + ", " + gamepoint_p0.ToString() + "|" + gamepoint_p1.ToString() + ", " + Game_Stats.PlayerID;
+
+            //debug_2.text = ((int)fps).ToString();
+            //if ((int)fps < 10)
+            //    debug_2.color = Color.red;
+            //else if ((int)fps < 30 && (int)fps >= 10)
+            //    debug_2.color = Color.yellow;
+            //else
+            //    debug_2.color = Color.green;
 
             debug_3.text = recv_frame.ToString();
             if (recv_frame == recv_frame_old)
@@ -612,8 +589,6 @@ public class VideoPanelApp : MonoBehaviour
                     rasengan.setPosition(Skill_Ref.GetComponent<Transform>().position);
                     if ((Skill_Ref.GetComponent<Transform>().localPosition.z < (5f - video_panel_z)) || (Time.time - animation_timeout) >= 1.5f)     // 在鏡頭前面5單位
                     {
-                        //if (rasengan.isAlive() == true)
-                        //    rasengan.finish(effect_time);
                         Destroy();
                         Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
                         status = replace_char(status, 0, "1");
@@ -628,21 +603,22 @@ public class VideoPanelApp : MonoBehaviour
                     {
                         Skill_Ref.GetComponent<Transform>().localPosition = Vector3.MoveTowards(Skill_Ref.GetComponent<Transform>().localPosition, new Vector3(0f, -1f, -video_panel_z), 2f);
                         fireRing.setPosition(Skill_Ref.GetComponent<Transform>().position);
-                        if ((Skill_Ref.GetComponent<Transform>().position.z < (5f - video_panel_z)) || (Time.time - animation_timeout) >= 2.0f)
+                        if ((Skill_Ref.GetComponent<Transform>().localPosition.z < (5f - video_panel_z)) || (Time.time - animation_timeout) >= 2.0f)
                         {
-                            //if (fireRing.isAlive() == true)
-                            //    fireRing.finish(effect_time);
                             Destroy();
                             Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
                             status = replace_char(status, 2, "1");
                             animation_flag = false;
                             ATK_2_animation = false;
+                            ATK_2_hit_recover = Time.time;         // 硬質時間
                         }
                     }
                 }
                 if (ATK_3_animation)
                 {
-                    if (laser.GetComponent<Transform>().position.z <= 5f || (Time.time - animation_timeout) >= 2.0f)
+                    Skill_Ref.GetComponent<Transform>().localPosition = Vector3.MoveTowards(Skill_Ref.GetComponent<Transform>().localPosition, new Vector3(0f, -1f, -video_panel_z), 2f);
+                    laser.setPosition(Skill_Ref.GetComponent<Transform>().position);
+                    if ((Skill_Ref.GetComponent<Transform>().localPosition.z < (5f - video_panel_z)) || (Time.time - animation_timeout) >= 2.0f)
                     {
                         Destroy();
                         Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
@@ -653,58 +629,29 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 if (ATK_4_animation)
                 {
-                    if (Time.time - ATK_4_wait_time >= 0.5f)
+                    if (Time.time - ATK_4_wait_time >= 0.9f)
                     {
+                        if (skill_temp.name == "Orb_Green(Clone)" && orb.isAlive() == true)
+                            orb.finish(effect_time);
                         lightning = Instantiate(Atk_4_end).GetComponent<Lightning>();
-                        lightning.ready(Lightening_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), 0.3f, 0.3f);
+                        lightning.ready(Lightening_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), 0.3f, 0.25f);
                         ATK_4_animation = false;
                         ATK_4_animation_end = true;
                         animation_timeout = Time.time;
+                        status = replace_char(status, 6, "1");
                     }
                 }
                 if (ATK_4_animation_end)
                 {
-                    if (Time.time - animation_timeout >= 1.5f)
+                    if (Time.time - animation_timeout >= 1.2f)
                     {
-                        status = replace_char(status, 6, "1");
                         ATK_4_animation_end = false;
                         animation_flag = false;
                         Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
                         Destroy();
+                        ATK_4_hit_recover = Time.time;         // 硬質時間
                     }
                 }
-
-                /*if (def_succ)             // 對方防禦成功
-                {
-                    magicCircle.blockSuccess();
-                    animation_flag = false;
-                    def_succ = false;
-                    //if ((Time.time - failed_attack_time) >= 1.5f)
-                    //{
-                    //    animation_flag = false;
-                    //    def_succ = false;
-                    //    failed_attack.SetActive(false);
-                    //}
-                }*/
-
-                /*if (defense_animation)
-                {
-                    if ((Time.time - defense_time) >= 1.5f)
-                    {
-                        animation_flag = false;
-                        defense_animation = false;
-                        successful_defense.SetActive(false);
-                    }
-                }
-                if (failed_attack_animation)
-                {
-                    if ((Time.time - failed_attack_time) >= 1.5f)
-                    {
-                        animation_flag = false;
-                        failed_attack_animation = false;
-                        failed_attack.SetActive(false);
-                    }
-                }*/
             }
             else
             {
@@ -757,9 +704,9 @@ public class VideoPanelApp : MonoBehaviour
                             Destroy();
                     }
                 }
-                else if (action == 4)
+                else if (action == 4)                  // 甩
                 {
-                    if (skill_temp == null)
+                    if (skill_temp == null && (Time.time - ATK_2_hit_recover) >= (1.0f + effect_time))
                     {
                         skill_temp = Instantiate(Atk_2);
                         fireRing = skill_temp.GetComponent<FireRing>();
@@ -804,7 +751,7 @@ public class VideoPanelApp : MonoBehaviour
                         {
                             laser = Instantiate(Atk_3_end).GetComponent<Laser>(); // attack1 alive
                             Vector3 zero = new Vector3();
-                            laser.ready(Skill_Ref.GetComponent<Transform>().position, zero - Skill_Ref.GetComponent<Transform>().position, effect_time, 3.0f);
+                            laser.ready(Skill_Ref.GetComponent<Transform>().position, zero - Skill_Ref.GetComponent<Transform>().position, effect_time, 2.0f);
                             animation_flag = true;
                             ATK_3_animation = true;
                             animation_timeout = Time.time;
@@ -815,13 +762,13 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 else if (action == 7)
                 {
-                    if (skill_temp == null)
+                    if (skill_temp == null && (Time.time - ATK_4_hit_recover) >= (1.0f + effect_time))
                     {
                         skill_temp = Instantiate(Atk_4_start);
                         orb = skill_temp.GetComponent<Orb>();
                         Skill_Ref.GetComponent<Transform>().localPosition =
-                            new Vector3(Joints[0].GetComponent<Transform>().localPosition.x, Joints[0].GetComponent<Transform>().localPosition.y + 2f, pre_z);
-                        orb.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), effect_time, 2.0f);
+                            new Vector3(Joints[0].GetComponent<Transform>().localPosition.x, Joints[0].GetComponent<Transform>().localPosition.y + 4f, pre_z);
+                        orb.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), 0.2f, 2.0f);
                         ATK_4_wait_time = Time.time;
                         animation_flag = true;
                         ATK_4_animation = true;
@@ -835,7 +782,7 @@ public class VideoPanelApp : MonoBehaviour
                     {
                         skill_temp = Instantiate(Def_1);
                         magicCircle = skill_temp.GetComponent<MagicCircle>();
-                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), effect_time, 3.0f);
+                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, -transform.forward, effect_time, 4.0f);
                     }
                     else
                     {
@@ -844,7 +791,7 @@ public class VideoPanelApp : MonoBehaviour
                             if (Joints_co[2] != 0f || Joints_co[3] != 0f)
                             {
                                 Skill_Ref.GetComponent<Transform>().localPosition = 
-                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y, pre_z);
+                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y -2f, pre_z);
                                 magicCircle.setPosition(Skill_Ref.GetComponent<Transform>().position);
                                 if (def_succ)
                                 {
@@ -863,7 +810,7 @@ public class VideoPanelApp : MonoBehaviour
                     {
                         skill_temp = Instantiate(Def_2);
                         magicCircle = skill_temp.GetComponent<MagicCircle>();
-                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), effect_time, 3.0f);
+                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, -transform.forward, effect_time, 4.0f);
                     }
                     else
                     {
@@ -872,7 +819,7 @@ public class VideoPanelApp : MonoBehaviour
                             if (Joints_co[2] != 0f || Joints_co[3] != 0f)
                             {
                                 Skill_Ref.GetComponent<Transform>().localPosition =
-                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y, pre_z);
+                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y - 2f, pre_z);
                                 magicCircle.setPosition(Skill_Ref.GetComponent<Transform>().position);
                                 if (def_succ)
                                 {
@@ -891,7 +838,7 @@ public class VideoPanelApp : MonoBehaviour
                     {
                         skill_temp = Instantiate(Def_3);
                         magicCircle = skill_temp.GetComponent<MagicCircle>();
-                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), effect_time, 3.0f);
+                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, -transform.forward, effect_time, 4.0f);
                     }
                     else
                     {
@@ -900,7 +847,7 @@ public class VideoPanelApp : MonoBehaviour
                             if (Joints_co[2] != 0f || Joints_co[3] != 0f)
                             {
                                 Skill_Ref.GetComponent<Transform>().localPosition =
-                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y, pre_z);
+                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y - 2f, pre_z);
                                 magicCircle.setPosition(Skill_Ref.GetComponent<Transform>().position);
                                 if (def_succ)
                                 {
@@ -919,7 +866,7 @@ public class VideoPanelApp : MonoBehaviour
                     {
                         skill_temp = Instantiate(Def_4);
                         magicCircle = skill_temp.GetComponent<MagicCircle>();
-                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, -1f), effect_time, 3.0f);
+                        magicCircle.ready(Skill_Ref.GetComponent<Transform>().position, -transform.forward, effect_time, 4.0f);
                     }
                     else
                     {
@@ -928,7 +875,7 @@ public class VideoPanelApp : MonoBehaviour
                             if (Joints_co[2] != 0f || Joints_co[3] != 0f)
                             {
                                 Skill_Ref.GetComponent<Transform>().localPosition =
-                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y, pre_z);
+                                    new Vector3(Joints[1].GetComponent<Transform>().localPosition.x, Joints[1].GetComponent<Transform>().localPosition.y - 2f, pre_z);
                                 magicCircle.setPosition(Skill_Ref.GetComponent<Transform>().position);
                                 if (def_succ)
                                 {
@@ -961,15 +908,13 @@ public class VideoPanelApp : MonoBehaviour
                     my_rasengan.setPosition(my_Skill_Ref.GetComponent<Transform>().position);
                     if ((my_Skill_Ref.GetComponent<Transform>().localPosition.z > (temp_pre_z - 5f)) || (Time.time - my_animation_timeout) >= 2.0f)
                     {
-                        //if (my_rasengan.isAlive() == true)
-                        //    my_rasengan.finish(effect_time);
                         my_Destroy();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
                         my_animation_flag = false;
                         my_ATK_1_animation = false;
                     }
                 }
-                if (my_ATK_2_animation)
+                if (my_ATK_2_animation)                // 甩
                 {
                     if (Time.time - my_ATK_2_wait_time >= 0.6f)
                     {
@@ -977,18 +922,19 @@ public class VideoPanelApp : MonoBehaviour
                         my_fireRing.setPosition(my_Skill_Ref.GetComponent<Transform>().position);
                         if ((my_Skill_Ref.GetComponent<Transform>().localPosition.z > (temp_pre_z - 5f)) || (Time.time - my_animation_timeout) >= 2.5f)
                         {
-                            //if (my_fireRing.isAlive() == true)
-                            //    my_fireRing.finish(effect_time);
                             my_Destroy();
                             my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
                             my_animation_flag = false;
                             my_ATK_2_animation = false;
+                            my_ATK_2_hit_recover = Time.time;       // 硬質時間
                         }
                     }
                 }
                 if (my_ATK_3_animation)
                 {
-                    if (my_laser.GetComponent<Transform>().position.z <= 5f || (Time.time - my_animation_timeout) >= 2.0f)
+                    my_Skill_Ref.GetComponent<Transform>().localPosition = Vector3.MoveTowards(my_Skill_Ref.GetComponent<Transform>().localPosition, new Vector3(0f, 0f, 0f), 2f);
+                    my_laser.setPosition(my_Skill_Ref.GetComponent<Transform>().position);
+                    if ((my_Skill_Ref.GetComponent<Transform>().localPosition.z > (temp_pre_z - 5f)) || (Time.time - my_animation_timeout) >= 2.0f)
                     {
                         my_Destroy();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, pre_z);
@@ -998,10 +944,12 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 if (my_ATK_4_animation)
                 {
-                    if (Time.time - my_ATK_4_wait_time >= 0.5f)
+                    if (Time.time - my_ATK_4_wait_time >= 0.9f)
                     {
+                        if (my_skill_temp.name == "Orb_Green(Clone)" && my_orb.isAlive() == true)
+                            my_orb.finish(effect_time);
                         my_lightning = Instantiate(Atk_4_end).GetComponent<Lightning>();
-                        my_lightning.ready(Lightening_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), 0.3f, 0.3f);
+                        my_lightning.ready(Lightening_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), 0.3f, 0.25f);
                         my_ATK_4_animation = false;
                         my_ATK_4_animation_end = true;
                         my_animation_timeout = Time.time;
@@ -1009,27 +957,15 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 if (my_ATK_4_animation_end)
                 {
-                    if (Time.time - my_animation_timeout >= 1.5f)
+                    if (Time.time - my_animation_timeout >= 1.2f)
                     {
                         my_ATK_4_animation_end = false;
                         my_animation_flag = false;
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0f, 0f);
                         my_Destroy();
+                        my_ATK_4_hit_recover = Time.time;       // 硬質時間
                     }
                 }
-
-                /*if (my_def_succ)                 // 我方防禦成功
-                {
-                    my_magicCircle.blockSuccess();
-                    my_animation_flag = false;
-                    my_def_succ = false;
-                    //if ((Time.time - defense_time) >= 1.5f)
-                    //{
-                    //    my_animation_flag = false;
-                    //    my_def_succ = false;
-                    //    successful_defense.SetActive(false);
-                    //}
-                }*/
             }
             else
             {
@@ -1071,7 +1007,7 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 else if (my_action == 4)              // 甩
                 {
-                    if (my_skill_temp == null)
+                    if (my_skill_temp == null && (Time.time - my_ATK_2_hit_recover) >= (1.0f + effect_time))
                     {
                         my_skill_temp = Instantiate(Atk_2);
                         my_fireRing = my_skill_temp.GetComponent<FireRing>();
@@ -1079,6 +1015,7 @@ public class VideoPanelApp : MonoBehaviour
                         my_fireRing.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0.1f, 0f, 1f), effect_time, 3.0f);
                         my_ATK_2_wait_time = Time.time;
                         my_animation_timeout = Time.time;
+                        temp_pre_z = pre_z;
                         my_animation_flag = true;
                         my_ATK_2_animation = true;
                     }
@@ -1092,7 +1029,7 @@ public class VideoPanelApp : MonoBehaviour
                         my_skill_temp = Instantiate(Atk_3_start);
                         my_orb = my_skill_temp.GetComponent<Orb>();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(-1f, -1f, 5f - video_panel_z);     // 在鏡頭前面5單位
-                        my_orb.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 3.0f);
+                        my_orb.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 2.0f);
                     }
                     else
                     {
@@ -1113,9 +1050,10 @@ public class VideoPanelApp : MonoBehaviour
                         {
                             my_laser = Instantiate(Atk_3_end).GetComponent<Laser>();
                             //Vector3 zero = new Vector3(0f, 0f, 0f);
-                            my_laser.ready(my_Skill_Ref.GetComponent<Transform>().position, transform.forward, effect_time, 3.0f);
+                            my_laser.ready(my_Skill_Ref.GetComponent<Transform>().position, transform.forward, effect_time, 1.5f);
                             my_animation_flag = true;
                             my_ATK_3_animation = true;
+                            temp_pre_z = pre_z;
                             my_animation_timeout = Time.time;
                         }
                         else
@@ -1124,12 +1062,12 @@ public class VideoPanelApp : MonoBehaviour
                 }
                 else if (my_action == 7)
                 {
-                    if (my_skill_temp == null)
+                    if (my_skill_temp == null && (Time.time - my_ATK_4_hit_recover) >= (1.0f + effect_time))
                     {
                         my_skill_temp = Instantiate(Atk_4_start);
                         my_orb = my_skill_temp.GetComponent<Orb>();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, 0.8f, 5f - video_panel_z);     // 在鏡頭前面5單位
-                        my_orb.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 2.0f);
+                        my_orb.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), 0.2f, 0.5f);
                         my_ATK_4_wait_time = Time.time;
                         my_animation_flag = true;
                         my_ATK_4_animation = true;
@@ -1144,7 +1082,7 @@ public class VideoPanelApp : MonoBehaviour
                         my_skill_temp = Instantiate(Def_1);
                         my_magicCircle = my_skill_temp.GetComponent<MagicCircle>();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, -0.8f, 5f - video_panel_z);     // 在鏡頭前面5單位
-                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 0.7f);
+                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, transform.forward, effect_time, 0.7f);
                     }
                     else
                     {
@@ -1169,7 +1107,7 @@ public class VideoPanelApp : MonoBehaviour
                         my_skill_temp = Instantiate(Def_2);
                         my_magicCircle = my_skill_temp.GetComponent<MagicCircle>();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, -0.8f, 5f - video_panel_z);     // 在鏡頭前面5單位
-                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 0.7f);
+                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, transform.forward, effect_time, 0.7f);
                     }
                     else
                     {
@@ -1194,7 +1132,7 @@ public class VideoPanelApp : MonoBehaviour
                         my_skill_temp = Instantiate(Def_3);
                         my_magicCircle = my_skill_temp.GetComponent<MagicCircle>();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, -0.8f, 5f - video_panel_z);     // 在鏡頭前面5單位
-                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 0.7f);
+                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, transform.forward, effect_time, 0.7f);
                     }
                     else
                     {
@@ -1219,7 +1157,7 @@ public class VideoPanelApp : MonoBehaviour
                         my_skill_temp = Instantiate(Def_4);
                         my_magicCircle = my_skill_temp.GetComponent<MagicCircle>();
                         my_Skill_Ref.GetComponent<Transform>().localPosition = new Vector3(0f, -0.8f, 5f - video_panel_z);     // 在鏡頭前面5單位
-                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, new Vector3(0f, 0f, 1f), effect_time, 0.7f);
+                        my_magicCircle.ready(my_Skill_Ref.GetComponent<Transform>().position, transform.forward, effect_time, 0.7f);
                     }
                     else
                     {
@@ -1251,25 +1189,6 @@ public class VideoPanelApp : MonoBehaviour
 
 #if !UNITY_EDITOR
 
-    /*
-    private async void Listener_Start()
-    {
-        Debug.Log("Listener started");
-        try
-        {
-            var hostName = new Windows.Networking.HostName(IP);
-            await listener.BindEndpointAsync(hostName, port);
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Error: " + e.Message);
-        }
-
-        Debug.Log("Listening");
-        local_fps = System.Diagnostics.Stopwatch.GetTimestamp();
-    }
-    */
-
     private async void StartClient(StreamSocket streamSocket)
     {
         try
@@ -1282,7 +1201,7 @@ public class VideoPanelApp : MonoBehaviour
                 // tell server who you are
                 using (var dw = new DataWriter(streamSocket.OutputStream))
                 {
-                    dw.WriteBytes(Encoding.ASCII.GetBytes(player));
+                    dw.WriteBytes(Encoding.ASCII.GetBytes(Game_Stats.PlayerID));
                     await dw.StoreAsync();
                     dw.DetachStream();
                 }
@@ -1345,11 +1264,6 @@ public class VideoPanelApp : MonoBehaviour
                         p0_win_lose = int.Parse(arr[41]);
                         p1_win_lose = int.Parse(arr[42]);
 
-                        /*defense_skill_2_p0 = int.Parse(arr[43]);
-                        defense_skill_2_p1 = int.Parse(arr[44]);
-                        blood_effect_p0 = int.Parse(arr[45]);
-                        blood_effect_p1 = int.Parse(arr[46]);*/
-
                         my_def_fail_p0 = int.Parse(arr[43]);
                         my_def_succ_p0 = int.Parse(arr[44]);
                         def_fail_p0 = int.Parse(arr[45]);
@@ -1360,23 +1274,27 @@ public class VideoPanelApp : MonoBehaviour
                         def_fail_p1 = int.Parse(arr[49]);
                         def_succ_p1 = int.Parse(arr[50]);
 
+                        player_id_err_p0 = int.Parse(arr[51]);
+                        player_id_err_p1 = int.Parse(arr[52]);
+
+                        int end_index = 52;
+
                         //pre_z = float.Parse(arr[47]);
 
-                        if(player == "holo_P0"){
+                        if(Game_Stats.PlayerID == "holo_P0" && Game_Start_MSG.playerID_init == true){
                             action = holo_action_p1;
                             my_action = holo_action_p0;
-
-                            //debug_4.text = arr[47] + "," + arr[48] + "," + arr[49] + "," + arr[50] + "," + arr[51] + "," + arr[52];
-                            if (arr[51] == "1"){                          // arr[47] is status[0]
+    
+                            if (arr[end_index + 1] == "1"){                          // arr[end_index + 1] is status[0]
                                 status = replace_char(status, 0, "0");
                             }
-                            if (arr[52] == "1"){                          // arr[48] is status[2]
+                            if (arr[end_index + 2] == "1"){                          // arr[end_index + 2] is status[2]
                                 status = replace_char(status, 2, "0");
                             }
-                            if (arr[53] == "1"){                          // arr[49] is status[4]
+                            if (arr[end_index + 3] == "1"){                          // arr[end_index + 3] is status[4]
                                 status = replace_char(status, 4, "0");
                             }
-                            if (arr[54] == "1"){                          // arr[50] is status[6]
+                            if (arr[end_index + 4] == "1"){                          // arr[end_index + 4] is status[6]
                                 status = replace_char(status, 6, "0");
                             }
 
@@ -1385,57 +1303,36 @@ public class VideoPanelApp : MonoBehaviour
                             }
                             if (my_def_succ_p0 == 1){          // 自己防禦陣 閃一下
                                 my_def_succ = true;
-                                //my_animation_flag = true;
-                                //successful_defense.SetActive(true);
-                                //defense_time = Time.time;
                             }
                             if (def_fail_p0 == 1){             // 對方噴血
                                 Blood.blood_animation = true;
                             }
                             if (def_succ_p0 == 1){             // 對方防禦陣 閃一下
                                 def_succ = true;
-                                //animation_flag = true;
-                                //failed_attack.SetActive(true);
-                                //failed_attack_time = Time.time;
                             }
 
-                            if (p0_win_lose == 2 && end_game_flag == false)                         // lose
-                                StartCoroutine(Lose_Game());
-                            else if (p0_win_lose == 1 && end_game_flag == false)                    // win
-                                StartCoroutine(Win_Game());
-
-                            //if (defense_skill_2_p0 == 1) {
-                            //    animation_flag = true;
-                            //    defense_animation = true;
-                            //    successful_defense.SetActive(true);
-                            //    defense_time = Time.time;
-                            //}
-                            //else if (defense_skill_2_p1 == 1) {
-                            //    animation_flag = true;
-                            //    failed_attack_animation = true;
-                            //    failed_attack.SetActive(true);
-                            //    failed_attack_time = Time.time;
-                            //}
-
-                            //if (blood_effect_p0 == 1) {
-                            //    Blood.my_blood_animation = true;
-                            //}
+                            if (end_game_flag == false && animation_flag == false && my_animation_flag == false && Blood.blood_animation == false && Blood.my_blood_animation == false){
+                                if (p0_win_lose == 2)                       // lose
+                                    StartCoroutine(Lose_Game());
+                                else if (p0_win_lose == 1)                  // win
+                                    StartCoroutine(Win_Game());
+                            }
+                            
                         }
-                        else if(player == "holo_P1"){
+                        else if(Game_Stats.PlayerID == "holo_P1" && Game_Start_MSG.playerID_init == true){
                             action = holo_action_p0;
                             my_action = holo_action_p1;
-
-                            //debug_4.text = arr[53] + "," + arr[54] + "," + arr[55] + "," + arr[56] + "," + arr[57] + "," + arr[58];
-                            if (arr[57] == "1"){                          // arr[53] is status[0]
+    
+                            if (arr[end_index + 7] == "1"){                          // arr[end_index + 7] is status[0]
                                 status = replace_char(status, 0, "0");
                             }
-                            if (arr[58] == "1"){                          // arr[54] is status[2]
+                            if (arr[end_index + 8] == "1"){                          // arr[end_index + 8] is status[2]
                                 status = replace_char(status, 2, "0");
                             }
-                            if (arr[59] == "1"){                          // arr[55] is status[4]
+                            if (arr[end_index + 9] == "1"){                          // arr[end_index + 9] is status[4]
                                 status = replace_char(status, 4, "0");
                             }
-                            if (arr[60] == "1"){                          // arr[56] is status[6]
+                            if (arr[end_index + 10] == "1"){                         // arr[end_index + 10] is status[6]
                                 status = replace_char(status, 6, "0");
                             }
 
@@ -1444,48 +1341,24 @@ public class VideoPanelApp : MonoBehaviour
                             }
                             if (my_def_succ_p1 == 1){          // 自己防禦陣 閃一下
                                 my_def_succ = true;
-                                //my_animation_flag = true;
-                                //successful_defense.SetActive(true);
-                                //defense_time = Time.time;
                             }
                             if (def_fail_p1 == 1){             // 對方噴血
                                 Blood.blood_animation = true;
                             }
                             if (def_succ_p1 == 1){             // 對方防禦陣 閃一下
                                 def_succ = true;
-                                //animation_flag = true;
-                                //failed_attack.SetActive(true);
-                                //failed_attack_time = Time.time;
                             }
 
-                            if (p1_win_lose == 2 && end_game_flag == false)                         // lose
-                                StartCoroutine(Lose_Game());
-                            else if (p1_win_lose == 1 && end_game_flag == false)                    // win
-                                StartCoroutine(Win_Game());
-
-                            //if (defense_skill_2_p1 == 1) {
-                            //    animation_flag = true;
-                            //    defense_animation = true;
-                            //    successful_defense.SetActive(true);
-                            //    defense_time = Time.time;
-                            //}
-                            //else if (defense_skill_2_p0 == 1) {
-                            //    animation_flag = true;
-                            //    failed_attack_animation = true;
-                            //    failed_attack.SetActive(true);
-                            //    failed_attack_time = Time.time;
-                            //}
-
-                            //if (blood_effect_p1 == 1) {
-                            //    animation_flag = true;
-                            //    blood_animation = true;
-                            //    blood.color = new Color(blood.color.r, blood.color.g, blood.color.b, 1f);
-                            //}
+                            if (end_game_flag == false && animation_flag == false && my_animation_flag == false && Blood.blood_animation == false && Blood.my_blood_animation == false){
+                                if (p1_win_lose == 2)                       // lose
+                                    StartCoroutine(Lose_Game());
+                                else if (p1_win_lose == 1)                  // win
+                                    StartCoroutine(Win_Game());
+                            }
                         }
                     
-                        fps = 10000000.0 / (System.Diagnostics.Stopwatch.GetTimestamp() - local_fps);
-                        local_fps = System.Diagnostics.Stopwatch.GetTimestamp();
-    
+                        //fps = 10000000.0 / (System.Diagnostics.Stopwatch.GetTimestamp() - local_fps);
+                        //local_fps = System.Diagnostics.Stopwatch.GetTimestamp();
                     }
                 }
             }
@@ -1494,11 +1367,6 @@ public class VideoPanelApp : MonoBehaviour
         {
             Debug.Log("connect error!!!!!!!! " + e);
         }
-        
-        
-
     }
-
 #endif
-
 }
