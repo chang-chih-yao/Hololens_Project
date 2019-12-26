@@ -90,12 +90,6 @@ class Skill(Enum):          # 9 actions 11 classes
     DEF_3 = 10
     DEF_4 = 11
 
-################################### OpenPose ###########################################
-gpu_options = tf.GPUOptions(allow_growth=True)
-#e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
-e = TfPoseEstimator(get_graph_path('mobilenet_v2_large'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
-#e = TfPoseEstimator(get_graph_path('cmu'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
-
 ############################## Action Recognition ######################################
 global num_class
 num_class = 11
@@ -123,6 +117,16 @@ trans = trans = torchvision.transforms.Compose([
     ]
 )
 
+# warm up
+_a = torch.ones([1, 9, 224, 224], dtype=torch.float32)
+_b = torch.autograd.Variable(_a, volatile=True)
+_c = model(_b)
+
+################################### OpenPose ###########################################
+gpu_options = tf.GPUOptions(allow_growth=True)
+#e = TfPoseEstimator(get_graph_path('mobilenet_thin'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
+e = TfPoseEstimator(get_graph_path('mobilenet_v2_large'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
+#e = TfPoseEstimator(get_graph_path('cmu'), target_size=(432, 368), tf_config=tf.ConfigProto(gpu_options=gpu_options))
 
 ################################### Socket #######################################
 HOST = '192.168.60.2'
@@ -132,7 +136,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    # tcp
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # reuse tcp
 sock.bind((HOST, PORT))
 sock.listen(5)
-print('Wait for connection...')
+print('\nWait for connection...' + ' IP : ' + HOST)
 
 
 global_action_p0 = 0  # outside camera action
