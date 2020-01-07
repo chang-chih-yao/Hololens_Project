@@ -19,7 +19,7 @@
 
 ## Abstract
 
-Mixed reality (MR) is getting popular, but its application in entertainment is still limited due to the lack of intuitive and vari- ous interactions between the user and other players. In this demonstra- tion, we propose an MR multiplayer game framework, which allows the player to interact directly with other players through intuitive body pos- tures/actions. Moreover, a body depth approximation method is designed to decrease the complexity of virtual content rendering without affect- ing the immersive fidelity while playing the game. Our framework uses deep learning models to achieve motion sensing, and a multiplayer MR interaction game containing a variety of actions is designed to validate the feasibility of the proposed framework.
+Mixed reality (MR) is getting popular, but its application in entertainment is still limited due to the lack of intuitive and various interactions between the user and other players. In this demonstration, we propose an MR multiplayer game framework, which allows the player to interact directly with other players through intuitive body postures/actions. Moreover, a body depth approximation method is designed to decrease the complexity of virtual content rendering without affecting the immersive fidelity while playing the game. Our framework uses deep learning models to achieve motion sensing, and a multiplayer MR interaction game containing a variety of actions is designed to validate the feasibility of the proposed framework.
 
 ***
 
