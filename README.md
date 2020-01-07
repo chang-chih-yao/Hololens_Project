@@ -17,6 +17,12 @@
 
 ***
 
+## Abstract
+
+Mixed reality (MR) is getting popular, but its application in entertainment is still limited due to the lack of intuitive and vari- ous interactions between the user and other players. In this demonstra- tion, we propose an MR multiplayer game framework, which allows the player to interact directly with other players through intuitive body pos- tures/actions. Moreover, a body depth approximation method is designed to decrease the complexity of virtual content rendering without affect- ing the immersive fidelity while playing the game. Our framework uses deep learning models to achieve motion sensing, and a multiplayer MR interaction game containing a variety of actions is designed to validate the feasibility of the proposed framework.
+
+***
+
 ## FlowChart and Scenario
 
 玩家穿戴 MR 眼鏡拍攝對手的肢體動作，透過wifi將影像傳送至運算伺服器，根據預訓練之深度類神經網路模型估測出對手的2D人體姿態與動作類別，根據目前做的動作類別，在定義好的骨架節點觸發相對應的特效，將觸發節點之位置與對應特效的資訊傳回AR眼鏡端，由眼鏡裝置繪製特效，產生虛實對應的AR效果。例如 "火影忍者" 當中許多 "忍術" 可以透過此方法把特效添加在真實人物上。
