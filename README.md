@@ -11,6 +11,8 @@
 
 ## Demo Video
 
+[DEMO VIDEO](https://youtu.be/nWGuf3UnUHA)
+
 [DEMO VIDEO for 2D panel effect](https://youtu.be/GcDtDXDkWOw)
 
 [DEMO VIDEO for 3D rendering effect](https://youtu.be/jx-tkRXsz-I)
