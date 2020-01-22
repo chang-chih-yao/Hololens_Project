@@ -11,9 +11,17 @@
 
 ## Demo Video
 
-[DEMO VIDEO-1](https://youtu.be/GcDtDXDkWOw)
+[DEMO VIDEO](https://youtu.be/nWGuf3UnUHA)
 
-[DEMO VIDEO-2](https://youtu.be/jx-tkRXsz-I)
+[DEMO VIDEO for 2D panel effect](https://youtu.be/GcDtDXDkWOw)
+
+[DEMO VIDEO for 3D rendering effect](https://youtu.be/jx-tkRXsz-I)
+
+***
+
+## Abstract
+
+Mixed reality (MR) is getting popular, but its application in entertainment is still limited due to the lack of intuitive and various interactions between the user and other players. In this demonstration, we propose an MR multiplayer game framework, which allows the player to interact directly with other players through intuitive body postures/actions. Moreover, a body depth approximation method is designed to decrease the complexity of virtual content rendering without affecting the immersive fidelity while playing the game. Our framework uses deep learning models to achieve motion sensing, and a multiplayer MR interaction game containing a variety of actions is designed to validate the feasibility of the proposed framework.
 
 ***
 
