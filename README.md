@@ -1,6 +1,6 @@
 # Framework Design for Multiplayer Motion Sensing Game in Mixture Reality (HoloLens)
 
-- 開發時間：2018/09/20 ~ now
+- 開發時間：2018/09/20 ~ 2020/01/20
 - 開發平台：Win 10, GTX 1060, i7-7700k
 - 開發裝置：Microsoft Hololens 1
 - 開發工具：Python 3.6, Unity 2018.3.0f
