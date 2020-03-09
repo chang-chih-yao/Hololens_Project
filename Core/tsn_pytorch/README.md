@@ -11,6 +11,13 @@ This is a reimplementation of temporal segment networks (TSN) in PyTorch. All se
 
 For optical flow extraction and video list generation, you still need to use the original [TSN codebase](https://github.com/yjxiong/temporal-segment-networks).
 
+## Installation
+
+### PyTorch 0.4.1
+
+### torchvision 0.2.1
+```pip install torchvision==0.2.1```
+
 ## Environment
 
 - Python 3.6
