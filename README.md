@@ -116,7 +116,7 @@ Version：
 
 ## Install Opencv with Hololens for Unity
 
-[HoloLensWithOpenCVForUnityExample](https://github.com/EnoxSoftware/HoloLensWithOpenCVForUnityExample)
+[HoloLensWithOpenCVForUnityExample_v1.0.2](https://github.com/EnoxSoftware/HoloLensWithOpenCVForUnityExample/tree/v1.0.2)
 
 - Windows 10 Pro 1809
 - Windows 10 SDK 10.0.17134.0
