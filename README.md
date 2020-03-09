@@ -134,7 +134,7 @@ Version：
 ## Python package
 
 - python 3.6.7
-- opencv 3.4.4. (pip install opencv-python)
+- opencv 3.4.2 (pip install opencv-python)
 - tensorflow-gpu 1.8.0
 - pytorch 0.4.1
 - torchvision 0.2.1
