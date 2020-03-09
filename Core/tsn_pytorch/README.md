@@ -15,6 +15,10 @@ For optical flow extraction and video list generation, you still need to use the
 
 ### PyTorch 0.4.1
 
+![image](../../etcs/pytorch_install.JPG)
+
+Our system CUDA version is 9.0, so the command line we used is ```conda install pytorch=0.4.1 cuda90 -c pytorch```
+
 ### torchvision 0.2.1
 ```pip install torchvision==0.2.1```
 
