@@ -31,18 +31,19 @@ $ bash download.sh
 You need dependencies below.
 
 - python 3.6
-- tensorflow 1.4.1+ (1.9.0)
+- tensorflow 1.4.1+ (our system version == 1.9.0)
 - opencv3, protobuf, python3-tk
 - slidingwindow
   - https://github.com/adamrehn/slidingwindow
-  - I copied from the above git repo to modify few things.
+  - ```pip install slidingwindow```
 - pycocotools (```pip install git+https://github.com/philferriere/cocoapi.git#subdirectory=PythonAPI```)
-  - need ```pip install cython``` first
+  - need ```pip install cython``` and install Visual Studio 2015 first !!!
 
 ### Package Install
 
 Alternatively, you can install this repo as a shared package using pip.
-1. unzip tf-pose-estimation-master.zip
+
+1. unzip "tf-pose-estimation-master.zip"
 2. rename "tf-pose-estimation-master" to "tf-pose-estimation"
 3. put folder "tf-pose-estimation" in "Hololens_Project/Core/"
 4. check requirements.txt, you can install by yourself
@@ -54,7 +55,7 @@ $ cd tf-pose-estimation
 $ python setup.py install
 ```
 
-If setup.py cause error, delete line 15.  
+If ```setup.py``` cause error, delete line 15.  
 ```subprocess.check_output(["bash", "models/graph/cmu/download.sh"], cwd=cwd)```  
 But make sure you have already downloaded "graph_opt.pb" in "models/graph/cmu/"
 
