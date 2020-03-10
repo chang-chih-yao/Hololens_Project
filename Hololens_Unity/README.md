@@ -1,21 +1,36 @@
 # HoloLens for Unity
 
-## Install Unity
+## Install Unity 2018.3.0f
 
+- Download "UnityDownloadAssistant-2018.3.0f" from Unity Official website.
 
+- Make sure to choose correct componenets!!
+
+![image](../etcs/unity_install.JPG)
+
+***
 
 ## Installation for Hololens Toolkit and Unity
 
 [Installation for Hololens Toolkit and Unity](https://github.com/Microsoft/MixedRealityToolkit-Unity/blob/2017.4.3.0/GettingStarted.md)
 
 Version：
+- HoloToolkit-Unity 2017.4.3.0 [Download from Microsoft github](https://github.com/Microsoft/MixedRealityToolkit-Unity/releases) or [Download from my google drive](https://drive.google.com/file/d/1pK6SrrfT9V-uA40U6aGAgHWV6ahVFAD7/view?usp=sharing)
 - Win 10 SDK 10.0.17134.0
 - Visual Studio 2017
 - .NET 4.6
 
 ***
 
+## Install HoloLens (1st gen) Emulator(模擬器)
+
+https://github.com/MicrosoftDocs/mixed-reality.zh-TW/blob/c94f6e78ab1de859c49fee9068fd7675d7f89e84/mixed-reality-docs/install-the-tools.md
+
+***
+
 ## Install Opencv with Hololens for Unity
+
+*If you download the full unity project from google drive, you can skip this step.*
 
 [HoloLensWithOpenCVForUnityExample_v1.0.2](https://github.com/EnoxSoftware/HoloLensWithOpenCVForUnityExample/tree/v1.0.2)
 
@@ -29,6 +44,12 @@ Version：
 
 在Client裡面的Assets資料夾內，若上述全部都裝完應該會長這樣：  
 ![image](../etcs/2.JPG)
+
+***
+
+## Download full unity project
+
+[HoloLens_20191226.unitypackage](https://drive.google.com/file/d/1N176u4MUyToPwdz4KqGw5a9-uAURZmu8/view?usp=sharing)
 
 ## Setup
 
