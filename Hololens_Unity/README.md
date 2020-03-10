@@ -30,7 +30,7 @@ https://github.com/MicrosoftDocs/mixed-reality.zh-TW/blob/c94f6e78ab1de859c49fee
 
 ## Install Opencv with Hololens for Unity
 
-*If you download the full unity project from google drive, you can skip this step.*
+**If you download the [full unity project from google drive](#download-full-unity-project), you can skip this step.**
 
 [HoloLensWithOpenCVForUnityExample_v1.0.2](https://github.com/EnoxSoftware/HoloLensWithOpenCVForUnityExample/tree/v1.0.2)
 
