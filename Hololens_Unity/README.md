@@ -1,4 +1,35 @@
 # HoloLens for Unity
+
+## Install Unity
+
+
+
+## Installation for Hololens Toolkit and Unity
+
+[Installation for Hololens Toolkit and Unity](https://github.com/Microsoft/MixedRealityToolkit-Unity/blob/2017.4.3.0/GettingStarted.md)
+
+Version：
+- Win 10 SDK 10.0.17134.0
+- Visual Studio 2017
+- .NET 4.6
+
+***
+
+## Install Opencv with Hololens for Unity
+
+[HoloLensWithOpenCVForUnityExample_v1.0.2](https://github.com/EnoxSoftware/HoloLensWithOpenCVForUnityExample/tree/v1.0.2)
+
+- Windows 10 Pro 1809
+- Windows 10 SDK 10.0.17134.0
+- Visual Studio 2017
+- Unity 2018.3.0f
+- [HoloToolkit-Unity](https://github.com/Microsoft/MixedRealityToolkit-Unity/releases) 2017.4.3.0
+- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR&utm_source=aff) 2.3.3
+- [HoloLensCameraStream](https://github.com/VulcanTechnologies/HoloLensCameraStream)
+
+在Client裡面的Assets資料夾內，若上述全部都裝完應該會長這樣：  
+![image](../etcs/2.JPG)
+
 ## Setup
 
 要從Unity編譯到HoloLens裡面，需進行兩段編譯。Unity編譯時的設定如下：
