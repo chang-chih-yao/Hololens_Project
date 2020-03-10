@@ -5,6 +5,10 @@
 
 ![image](../etcs/Unity_Setting.JPG)
 
+XR Settings：
+
+![image](../etcs/Unity_Setting_2.png)
+
 務必確認：
 1. Scenes In Bulid
 2. Build Settings
